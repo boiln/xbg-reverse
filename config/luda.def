@@ -1,0 +1,4 @@
+LIBRARY luda
+EXPORTS
+    DllMain
+    XbgShutdown

@@ -1,0 +1,12 @@
+/build/
+*.exe
+*.exp
+*.lib
+*.map
+*.obj
+*.pdb
+*.xdb
+*.xex
+__pycache__/
+*.pyc
+/secrets/
