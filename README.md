@@ -1,3 +1,6 @@
+> ⚠️ **Disclaimer**: This is for educational purposes only. Users are responsible for complying with all applicable laws and terms of service.
+
+
 # xbGuard Bo2 Offhost Menu
 
 Reversed and rebuilt off decompilation artifacts
