@@ -118,4 +118,4 @@ namespace aimbot {
             action(0, 0, 0);
         }
     }
-}  // namespace aimbot
+}

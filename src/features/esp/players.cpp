@@ -358,6 +358,7 @@ namespace esp {
     }
 
     void ConstantRadar(bool on) {
+        // toggling uses a nop and restores the stock conditional branch.
         u32* p = (u32*)0x821B8FD4ull;
 
         if (s_radarState < 0) {
@@ -376,4 +377,4 @@ namespace esp {
         VirtualProtect(p, 4, old, &old);
         s_radarState = want;
     }
-}  // namespace esp
+}

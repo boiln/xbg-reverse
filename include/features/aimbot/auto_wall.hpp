@@ -21,6 +21,7 @@ namespace autowall {
         u32 reverseType;
     };
 
+    // evaluates direct and penetrated damage from eye to end and fills result diagnostics.
     bool Evaluate(void* cg, void* entities, int localClient, int targetClient, const float eye[3], const float end[3],
                   bool spectatorMode, Result* result);
-}  // namespace autowall
+}

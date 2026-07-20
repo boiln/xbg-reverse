@@ -229,4 +229,4 @@ namespace aimbot {
     void AngleVectors(float pitch, float yaw, float roll, float* forward, float* right, float* up);
     void SteerView(void* cg, float pitch, float yaw);
     u32 AaRand();
-}  // namespace aimbot
+}

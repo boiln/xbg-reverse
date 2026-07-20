@@ -272,7 +272,7 @@ namespace reconrender {
     u8 s_savedRenameSet[18] = {0};
     volatile u32 g_dbgLastAction = 0;
     volatile int g_dbgLastResult = 0;
-}  // namespace reconrender
+}
 
 extern "C" {
 volatile unsigned int g_rrPhase = 0;

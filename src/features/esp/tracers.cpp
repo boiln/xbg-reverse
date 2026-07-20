@@ -117,6 +117,7 @@ namespace esp {
     }
 
     void DisableNativeCrosshair(int on) {
+        // toggling uses a zero-return word and restores the stock branch.
         u32* p = (u32*)0x821C7C18ull;
 
         if (s_crossState < 0) {
@@ -135,4 +136,4 @@ namespace esp {
         VirtualProtect(p, 4, old, &old);
         s_crossState = want;
     }
-}  // namespace esp
+}

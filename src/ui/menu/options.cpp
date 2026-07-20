@@ -267,6 +267,7 @@ namespace reconrender {
             __try {
                 u32 head = *(volatile u32*)(u64)(setVa + 4u);
                 if (!ValidXenonPtr(head)) {
+                    // the local set preserves mutations when the resident tree is unavailable.
                     LocalSetWrite(fallback, id, enabled);
                     return true;
                 }
@@ -299,6 +300,7 @@ namespace reconrender {
                     typedef void(__cdecl * DestroyTree_t)(u32, u32);
                     u32 root = *(volatile u32*)(u64)(head + 4u);
                     ((DestroyTree_t)(u64)0x90B09138u)(setVa, root);
+                    // resetting every sentinel link leaves the resident tree empty and reusable.
                     *(volatile u32*)(u64)(head + 0u) = head;
                     *(volatile u32*)(u64)(head + 4u) = head;
                     *(volatile u32*)(u64)(head + 8u) = head;
@@ -339,4 +341,4 @@ namespace reconrender {
 
         return false;
     }
-}  // namespace reconrender
+}

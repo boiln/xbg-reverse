@@ -296,4 +296,4 @@ namespace reconrender {
         }
         g_prev = b;
     }
-}  // namespace reconrender
+}

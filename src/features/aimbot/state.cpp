@@ -6,4 +6,4 @@ namespace aimbot {
 
     bool EspHittable(int client) { return client >= 0 && client < 18 && s_espHittable[client] != 0; }
     bool EspVisible(int client) { return client >= 0 && client < 18 && s_espVisible[client] != 0; }
-}  // namespace aimbot
+}

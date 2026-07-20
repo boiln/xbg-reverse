@@ -246,6 +246,6 @@ namespace xbglog {
         }
         for (int i = 0; i < 400 && !s_exited; ++i) Sleep(5);
     }
-}  // namespace xbglog
+}
 
 #endif

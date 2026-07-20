@@ -185,6 +185,6 @@ namespace autobone {
 
         return Try(context, trySelector, state->rollingSelector, &bestDamage, result);
     }
-}  // namespace autobone
+}
 
 #endif

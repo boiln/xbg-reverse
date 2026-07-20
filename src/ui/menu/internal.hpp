@@ -295,4 +295,4 @@ namespace reconrender {
     bool DetectMenu_Scan(bool showNoMenu);
     void Frame();
     void Input(u16 buttons, u8 leftTrigger);
-}  // namespace reconrender
+}

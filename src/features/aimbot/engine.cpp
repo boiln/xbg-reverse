@@ -21,6 +21,7 @@ namespace aimbot {
     void ApplyAimbotPatches(void* cg) {
         const u32 nop = 0x60000000;
         bool recoil = CB(CFG_RECOIL) != 0;
+        // enabled paths use bypass words; disabled paths restore stock instructions.
         PatchWord(0x82259BC8, recoil ? 0x38600001 : 0x48461341);
         PatchWord(0x8223AC00, recoil ? nop : 0x4800000C);
 
@@ -154,4 +155,4 @@ namespace aimbot {
 
         *point = adjusted;
     }
-}  // namespace aimbot
+}

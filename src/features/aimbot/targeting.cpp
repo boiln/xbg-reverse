@@ -9,8 +9,10 @@ namespace aimbot {
         if (!cg || !entities || localIdx < 0 || targetIdx < 0) return false;
         unsigned char fire[0x40];
         unsigned char trace[0x80];
+
         for (int i = 0; i < 0x40; ++i) fire[i] = 0;
         for (int i = 0; i < 0x80; ++i) trace[i] = 0;
+
         *(u32*)(fire + 0x00) = 0x3FE;
         *(u32*)(fire + 0x04) = RI(cg, 0x48248);
         *(float*)(fire + 0x08) = 1.0f;
@@ -18,11 +20,16 @@ namespace aimbot {
         *(Vec3*)(fire + 0x10) = start;
         *(Vec3*)(fire + 0x1C) = start;
         *(Vec3*)(fire + 0x28) = end;
-        float dx = end.x - start.x, dy = end.y - start.y, dz = end.z - start.z;
+
+        float dx = end.x - start.x;
+        float dy = end.y - start.y;
+        float dz = end.z - start.z;
         float length = sqrtf(dx * dx + dy * dy + dz * dz);
         if (length <= 0.0001f) return false;
+
         Vec3 direction = {dx / length, dy / length, dz / length};
         *(Vec3*)(fire + 0x34) = direction;
+
         char* localEntity = entities + localIdx * ENT_STRIDE;
         if (!pBulletTrace(0, fire, localEntity, trace, 0, 0)) return false;
         if (CB(MODE_SPECTATOR) == 0 && *(short*)(trace + 0x28) == 0x14) return false;
@@ -140,6 +147,7 @@ namespace aimbot {
 
         if (!autowall::Evaluate(context->cg, context->entities, context->localIdx, context->targetIdx, eye, end,
                                 CB(MODE_SPECTATOR) != 0, &wall)) {
+            // failed traces still publish their terminal state for the profiler.
             s_awStage = wall.stage;
             s_awThickness100 = (int)(wall.lastThickness * 100.0f);
             s_awDepth100 = (int)(wall.lastDepth * 100.0f);
@@ -159,6 +167,7 @@ namespace aimbot {
         s_awEdgeBits = wall.edgeBits;
         s_awFireHit = (int)wall.fireHitId;
         s_awForwardHit = (int)wall.forwardHitId;
+        // a selector only wins when it improves the current damage score.
         if (wall.score <= *bestDamage) return false;
         *bestDamage = wall.score;
         context->lastDirect = wall.direct;
@@ -266,4 +275,4 @@ namespace aimbot {
     int DbgCSNibble() { return s_csNibble; }
 
     bool WantAutoShoot() { return CB(CFG_AUTOSHOOT) != 0 && s_hasTarget; }
-}  // namespace aimbot
+}

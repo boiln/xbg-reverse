@@ -142,4 +142,4 @@ namespace esp {
 
         return RI(ent, 0x22C) == 2;
     }
-}  // namespace esp
+}

@@ -99,4 +99,4 @@ namespace esp {
             if (CB(V_POINTERS) && CB(0x90B4328D) == 0) DrawPointer(cg, ent, col);
         }
     }
-}  // namespace esp
+}

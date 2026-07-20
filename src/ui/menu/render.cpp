@@ -7,6 +7,7 @@ namespace reconrender {
 
         return -1;
     }
+
     int ParentPage(int p) {
         switch (p) {
             case PAGE_RECOVERY:
@@ -64,6 +65,7 @@ namespace reconrender {
         while (i) b[j++] = t[--i];
         b[j] = 0;
     }
+
     void UtoA(u32 v, char* b) {
         char t[16];
         int i = 0;
@@ -76,6 +78,7 @@ namespace reconrender {
         while (i) b[j++] = t[--i];
         b[j] = 0;
     }
+
     void U64ToHex(u64 v, char* b) {
         static const char kHex[] = "0123456789abcdef";
         char t[17];
@@ -89,6 +92,7 @@ namespace reconrender {
         while (i) b[j++] = t[--i];
         b[j] = 0;
     }
+
     void Adjust(Option& o, int dir) {
         if (o.kind == K_SLIDER || o.kind == K_SLIDER_TOGGLE) {
             if (!o.backFloat) return;
@@ -116,6 +120,7 @@ namespace reconrender {
             *o.backByte = (u8)v;
         }
     }
+
     static void FmtSlider(const Option& o, char* buf) {
         if (!buf) return;
 
@@ -133,11 +138,14 @@ namespace reconrender {
         if (v < o.lo) v = o.lo;
         if (v > o.hi) v = o.hi;
         if (o.fmt == FMT_255) v = v * 255.0f;
+
         bool neg = v < 0;
         if (neg) v = -v;
+
         int decimals = o.fmt == FMT_2DEC ? 2 : (o.fmt == FMT_1DEC ? 1 : 0);
         int scale = decimals == 2 ? 100 : (decimals == 1 ? 10 : 1);
-        int whole = (int)v, frac = (int)((v - whole) * (float)scale + 0.5f);
+        int whole = (int)v;
+        int frac = (int)((v - whole) * (float)scale + 0.5f);
 
         if (frac >= scale) {
             whole++;
@@ -145,9 +153,12 @@ namespace reconrender {
         }
         char num[24];
         char* p = num;
+
         if (neg) *p++ = '-';
+
         char tmp[16];
         ItoA(whole, tmp);
+
         int i = 0;
         while (tmp[i]) *p++ = tmp[i++];
 
@@ -196,13 +207,17 @@ namespace reconrender {
 
     void RenderMenu() {
         BuildPage(g_curPage);
+
         float avail = L.scrH - L.menuY - L.titleH - L.tabH - L.barH - 12.0f;
 
         if (g_optCount > 0 && L.rowH * g_optCount > avail) {
-            float c = avail / (float)g_optCount, m = L.emPx + 2.0f;
+            float c = avail / (float)g_optCount;
+            float m = L.emPx + 2.0f;
             L.rowH = c > m ? c : m;
         }
-        float x = L.menuX, y = L.menuY;
+
+        float x = L.menuX;
+        float y = L.menuY;
         float bodyH = g_optCount * L.rowH;
         float totalH = L.titleH + bodyH + L.tabH + L.barH;
 
@@ -212,11 +227,15 @@ namespace reconrender {
         DrawBorder(x, y, L.menuW, totalH, L.border, kColBorder);
 
         int sel = g_sel[g_curPage < PAGE_N ? g_curPage : 0];
-        float bodyTop = y + L.titleH, rx = x + L.menuW - L.pad;
+        float bodyTop = y + L.titleH;
+        float rx = x + L.menuW - L.pad;
         char buf[80];
+
         for (int i = 0; i < g_optCount; ++i) {
             const Option& o = g_options[i];
-            float ry = bodyTop + i * L.rowH, ty = TextY(ry, L.rowH);
+            float ry = bodyTop + i * L.rowH;
+            float ty = TextY(ry, L.rowH);
+
             DrawTextS(o.label, x + L.pad, ty, i == sel ? kColAccent : kColText);
             switch (o.kind) {
                 case K_TOGGLE: {
@@ -408,4 +427,4 @@ namespace reconrender {
         f[2] = b;
         f[3] = a;
     }
-}  // namespace reconrender
+}

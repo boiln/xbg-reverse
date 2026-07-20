@@ -56,21 +56,34 @@ namespace aimbot {
 
         int cand = 0;
 
-        float best = 1e18f, bYaw = 0, bPitch = 0;
+        float best = 1e18f;
+        float bYaw = 0;
+        float bPitch = 0;
         int bIdx = -1;
         bool found = false;
         bool bOnScreen = false;
-        Vec3 bAimPt = {0, 0, 0}, bAimPtP = {0, 0, 0};
-        float bestP = 1e18f, bYawP = 0, bPitchP = 0;
+        Vec3 bAimPt = {0, 0, 0};
+
+        float bestP = 1e18f;
+        float bYawP = 0;
+        float bPitchP = 0;
         int bIdxP = -1;
         bool foundP = false;
         bool bOnScreenP = false;
-        float aaBest = 3.4e38f, aaYaw = 0.0f, aaPitch = 0.0f;
+        Vec3 bAimPtP = {0, 0, 0};
+
+        float aaBest = 3.4e38f;
+        float aaYaw = 0.0f;
+        float aaPitch = 0.0f;
         bool aaPriority = false;
+
         float fovRadius = AimFovPixels();
-        float centerX = RI(rd, RD_W) * 0.5f, centerY = RI(rd, RD_H) * 0.5f;
+        float centerX = RI(rd, RD_W) * 0.5f;
+        float centerY = RI(rd, RD_H) * 0.5f;
+
         int aimBone = CB(CFG_HEAD) ? 2 : (int)CB(CFG_AIMTAG);
         if (aimBone < 0 || aimBone >= kBoneCount) aimBone = 2;
+
         for (int i = 0; i < 18; ++i) {
             if (i == localIdx) continue;
             char* ent = base + i * ENT_STRIDE;
@@ -79,14 +92,18 @@ namespace aimbot {
             if (RI(ci, 0) == 0 && RB(ci, CI_NAME) == 0) continue;
             if (CB(CFG_WHITELIST + i)) continue;
             if (pTeam(0, ent) != 0) continue;
+
             ++cand;
+
             Vec3 targetOrigin = RV3(ent, E_ORIGIN);
             float odx = targetOrigin.x - localOrigin.x;
             float ody = targetOrigin.y - localOrigin.y;
             float odz = targetOrigin.z - localOrigin.z;
             float distance = sqrtf(odx * odx + ody * ody + odz * odz);
+
             Vec3 o = {0.0f, 0.0f, 0.0f};
             bool hittable = false;
+
             BoneEvalContext boneContext;
             boneContext.cg = cg;
             boneContext.entities = base;
@@ -97,6 +114,7 @@ namespace aimbot {
             boneContext.lastDirect = false;
 
             __try {
+                // autobone scans only after the configured bone fails its direct path.
                 autobone::Vec3 configuredPoint;
                 bool configuredResolved = ResolveDirectBone(&boneContext, (u8)aimBone, &configuredPoint);
                 if (configuredResolved) {
@@ -142,12 +160,18 @@ namespace aimbot {
             if (!hittable) continue;
 
             s_espHittable[i] = 1;
+            // fov uses the live point while aim angles use the predicted point.
             Vec3 fovPoint = o;
             ApplyAimPrediction(cg, base, i, &o);
-            float dx = o.x - eye.x, dy = o.y - eye.y, dz = o.z - eye.z;
+
+            float dx = o.x - eye.x;
+            float dy = o.y - eye.y;
+            float dz = o.z - eye.z;
             float yaw = atan2f(dy, dx) * RAD2DEG;
             float pitch = -atan2f(dz, sqrtf(dx * dx + dy * dy)) * RAD2DEG;
+
             bool priority = CB(CFG_PRIORITY + i) != 0;
+            // anti-aim keeps a separate nearest target with priority taking precedence.
             if ((!aaPriority && priority) || (priority == aaPriority && distance < aaBest)) {
                 aaBest = distance;
                 aaYaw = yaw;
@@ -155,11 +179,13 @@ namespace aimbot {
                 aaPriority = priority;
                 s_aaHasTarget = true;
             }
+
             Vec2 screen;
 
             bool projected = WorldToScreen(cg, fovPoint, &screen);
             bool onScreen = projected && centerX - fovRadius < screen.x && screen.x < centerX + fovRadius &&
                             centerY - fovRadius < screen.y && screen.y < centerY + fovRadius;
+
             float pixelCost = 0.0f;
             if (projected) {
                 float pixelDx = screen.x - centerX, pixelDy = screen.y - centerY;
@@ -188,6 +214,7 @@ namespace aimbot {
         s_reach = 5;
         s_cand = cand;
 
+        // the priority pool replaces the normal closest target after the full scan.
         if (foundP) {
             best = bestP;
             bYaw = bYawP;
@@ -212,4 +239,4 @@ namespace aimbot {
         bool doSteer = s_hasTarget && mode == 1;
         if (doSteer) SteerView(cg, s_aimPitch, s_aimYaw);
     }
-}  // namespace aimbot
+}

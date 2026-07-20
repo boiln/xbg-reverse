@@ -6,6 +6,7 @@ UseTab: Never
 NamespaceIndentation: All # indent everything inside namespaces
 
 ColumnLimit: 120
+FixNamespaceComments: false
 
 SortIncludes: CaseInsensitive
 IncludeBlocks: Regroup

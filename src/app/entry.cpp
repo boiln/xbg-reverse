@@ -6,18 +6,19 @@
 namespace menu {
     void Engine_Bootstrap(void);
     void Engine_Teardown(void);
-}  // namespace menu
+}
 
 namespace reconrender {
     void Start(void);
     void Stop(void);
-}  // namespace reconrender
+}
 
 extern "C" {
 volatile unsigned long XbgBootFaulted = 0;
 volatile unsigned long XbgBooted = 0;
 }
 
+// shuts down hooks and frees the reconstructed arena.
 extern "C" __declspec(dllexport) unsigned long XbgShutdown(void) {
     __try {
         reconrender::Stop();
@@ -31,6 +32,7 @@ extern "C" __declspec(dllexport) unsigned long XbgShutdown(void) {
     return 0;
 }
 
+// handles process attach initialization and detach cleanup.
 BOOL APIENTRY DllMain(HANDLE, DWORD reason, LPVOID) {
     if (reason == DLL_PROCESS_ATTACH) {
         xbg::ArenaInit();

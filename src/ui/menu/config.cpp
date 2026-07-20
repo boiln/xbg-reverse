@@ -380,4 +380,4 @@ namespace reconrender {
         short tag = getString("j_head", 0);
         if (tag > 0) s_thirdPersonHeadTag = (u16)tag;
     }
-}  // namespace reconrender
+}

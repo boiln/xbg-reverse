@@ -43,4 +43,4 @@ namespace xbg {
             g_arena = 0;
         }
     }
-}  // namespace xbg
+}

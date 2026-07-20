@@ -27,9 +27,13 @@ namespace xbglog {
     };
 
 #if XBG_LOG_ENABLED
+    // starts the asynchronous logger and owns its writer thread until stop.
     void Start();
+    // starts a fresh game log epoch and clears any pending records.
     void BeginGameInstance();
+    // drains pending records and joins the writer thread.
     void Stop();
+    // queues one diagnostic event with four caller-defined fields.
     void Event(EventId id, u32 a, u32 b, u32 c, u32 d);
 #else
     inline void Start() {}
@@ -37,4 +41,4 @@ namespace xbglog {
     inline void Stop() {}
     inline void Event(EventId, u32, u32, u32, u32) {}
 #endif
-}  // namespace xbglog
+}

@@ -212,4 +212,4 @@ namespace reconrender {
         } __except (EXCEPTION_EXECUTE_HANDLER) {
         }
     }
-}  // namespace reconrender
+}

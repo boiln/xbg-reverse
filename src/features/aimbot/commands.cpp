@@ -26,9 +26,12 @@ namespace aimbot {
 
     static bool CurrentSpread(void* cg, float* spread) {
         if (!cg || !spread) return false;
+
         void* ps = (char*)cg + 0x480A8;
         u32 weapon = (u32)pGetViewmodelWeapon(ps);
-        float minimum = 0.0f, maximum = 0.0f;
+        float minimum = 0.0f;
+        float maximum = 0.0f;
+
         pGetSpreadForWeapon(ps, weapon, &minimum, &maximum);
 
         if (RF(cg, 0x48288) != 0.0f) {
@@ -43,9 +46,12 @@ namespace aimbot {
 
     static void ApplyNoSpread(void* cg, char* previous, char* oldSlot, char* newSlot, int mode) {
         if (!CB(CFG_SPREAD) || !cg || !previous || !oldSlot || !newSlot) return;
+
         float spread = 0.0f;
         if (!CurrentSpread(cg, &spread)) return;
-        float randomX = 0.0f, randomY = 0.0f;
+
+        float randomX = 0.0f;
+        float randomY = 0.0f;
         SpreadRandom(*(u32*)(newSlot + U_SERVERTIME), &randomX, &randomY);
 
         bool leanActive = false;
@@ -61,7 +67,9 @@ namespace aimbot {
             return;
         }
 
-        float sourcePitch = 0.0f, sourceYaw = 0.0f, sourceRoll = 0.0f;
+        float sourcePitch = 0.0f;
+        float sourceYaw = 0.0f;
+        float sourceRoll = 0.0f;
 
         if (RB(cg, 0x4809C) == 0) {
             sourcePitch = RF(cg, 0x69810);
@@ -71,17 +79,24 @@ namespace aimbot {
             sourceYaw = RF(cg, 0x64924);
             sourceRoll = RF(cg, 0x64928);
         }
-        float forward[3], right[3], up[3];
+
+        float forward[3];
+        float right[3];
+        float up[3];
         AngleVectors(sourcePitch, sourceYaw, sourceRoll, forward, right, up);
+
         float spreadRadians = spread * 0.01745329238474369f;
         float cone = (sinf(spreadRadians) / cosf(spreadRadians)) * 8192.0f;
         Vec3 shot = {forward[0] * 8192.0f + right[0] * (randomX * cone) + up[0] * (randomY * cone),
                      forward[1] * 8192.0f + right[1] * (randomX * cone) + up[1] * (randomY * cone),
                      forward[2] * 8192.0f + right[2] * (randomX * cone) + up[2] * (randomY * cone)};
+
         float shotYaw = atan2f(shot.y, shot.x) * RAD2DEG;
         float shotPitch = -atan2f(shot.z, sqrtf(shot.x * shot.x + shot.y * shot.y)) * RAD2DEG;
+
         u32 pitchCorrection = (u32)(int)((sourcePitch - shotPitch) * 182.04444885253906f) & 0xFFFF;
         u32 yawCorrection = (u32)(int)((sourceYaw - shotYaw) * 182.04444885253906f) & 0xFFFF;
+
         *(u32*)(oldSlot + U_PITCH) += pitchCorrection;
         *(u32*)(oldSlot + U_YAW) += yawCorrection;
         *(u32*)(previous + U_PITCH) += pitchCorrection;
@@ -91,18 +106,25 @@ namespace aimbot {
     static void AntiAim(void* cmd, bool writeCmd) {
         s_aaActive = false;
         if (!CB(AA_ENABLE)) return;
-        int my = CB(AA_YAW), mp = CB(AA_PITCH);
+
+        int my = CB(AA_YAW);
+        int mp = CB(AA_PITCH);
         if (my == 0 && mp == 0) return;
 
-        float vPitch, vYaw;
+        float vPitch;
+        float vYaw;
         ViewRef(&vPitch, &vYaw);
 
-        int dumP, dumY;
+        int dumP;
+        int dumY;
         int* cmdP = writeCmd ? (int*)((char*)cmd + U_PITCH) : &dumP;
         int* cmdY = writeCmd ? (int*)((char*)cmd + U_YAW) : &dumY;
+
         bool hasT = s_aaHasTarget;
         bool yawWrote = false;
-        float fYaw = vYaw, fPitch = vPitch;
+
+        float fYaw = vYaw;
+        float fPitch = vPitch;
 
         if (mp == 1) {
             if (hasT)
@@ -196,6 +218,7 @@ namespace aimbot {
 
         char* entities = Entities();
         if (!entities) return;
+
         int owner = RI(cg, 0x00);
         if (owner < 0 || owner >= 18) return;
         if ((int)(signed char)RB(e, 0x2C3) != owner) return;
@@ -230,31 +253,39 @@ namespace aimbot {
             s_path = 1;
             return;
         }
+
         u32 cmdNum = *(u32*)(cs + CS_CMDNUM);
         char* previous = cs + CS_CMDRING + ((cmdNum - 1) & 0x7F) * CMD_STRIDE;
         char* oldSlot = cs + CS_CMDRING + (cmdNum & 0x7F) * CMD_STRIDE;
         char* newSlot = cs + CS_CMDRING + ((cmdNum + 1) & 0x7F) * CMD_STRIDE;
+
         int mode = CB(CFG_TYPE);
-        float vPitch, vYaw;
+        float vPitch;
+        float vYaw;
         ViewRef(&vPitch, &vYaw);
+
         s_pathMode = mode;
         s_pathHasTarget = s_hasTarget ? 1 : 0;
-        bool aimActive = mode != 0 && s_hasTarget;
 
+        bool aimActive = mode != 0 && s_hasTarget;
         bool aaActive = CB(MODE_SPECTATOR) == 0 && CB(AA_ENABLE) != 0 && (CB(AA_YAW) != 0 || CB(AA_PITCH) != 0) && cg &&
                         ((RI(cg, 0x481A4) & 0x4000) == 0) && ((RI(cg, 0x480B4) & 0x5) == 0);
         bool manualFire = (*(u32*)(oldSlot + U_BUTTONS) & BTN_ATTACK) != 0;
+
         if (!aaActive) s_aaActive = false;
         if (!aimActive && manualFire) aaActive = false;
         if (!aimActive && !aaActive) return;
 
+        // cloning first preserves every non-time field in the synthesized command.
         for (u32 i = 0; i < CMD_STRIDE; ++i) newSlot[i] = oldSlot[i];
         *(int*)(oldSlot + U_SERVERTIME) -= 1;
         *(int*)(newSlot + U_SERVERTIME) += 1;
         *(u32*)(cs + CS_CMDNUM) = cmdNum + 1;
 
         if (aimActive) {
-            float dPitch = NormDeg(s_aimPitch - vPitch), dYaw = NormDeg(s_aimYaw - vYaw);
+            float dPitch = NormDeg(s_aimPitch - vPitch);
+            float dYaw = NormDeg(s_aimYaw - vYaw);
+
             *(int*)(oldSlot + U_PITCH) = ANGLE2SHORT(dPitch);
             *(int*)(oldSlot + U_YAW) = ANGLE2SHORT(dYaw);
             if (mode == 1) {
@@ -267,14 +298,22 @@ namespace aimbot {
                 s_path = 5;
             }
 
+            // rotating movement by the yaw delta preserves its world-space direction.
             float shift = NormDeg(dYaw - *(float*)(cs + CS_MVYAW)) * 0.017453292519943295f;
-            float sr = sinf(shift), cr = cosf(shift);
+            float sr = sinf(shift);
+            float cr = cosf(shift);
+
             signed char* mf = (signed char*)(oldSlot + 0x24);
             signed char* mr = (signed char*)(oldSlot + 0x25);
-            int fv = *mf, rv = *mr;
-            int nf = (int)(cr * fv - sr * rv), nr = (int)(sr * fv + cr * rv);
+
+            int fv = *mf;
+            int rv = *mr;
+            int nf = (int)(cr * fv - sr * rv);
+            int nr = (int)(sr * fv + cr * rv);
+
             *mf = (signed char)(nf < -128 ? -128 : (nf > 127 ? 127 : nf));
             *mr = (signed char)(nr < -128 ? -128 : (nr > 127 ? 127 : nr));
+
             ApplyNoSpread(cg, previous, oldSlot, newSlot, mode);
             s_myAim = *(int*)(oldSlot + U_YAW) & 0xFFFF;
             s_wrote++;
@@ -297,6 +336,7 @@ namespace aimbot {
         s_autoCmd = 0;
 
         if (canShoot && aimActive && CB(CFG_AUTOSHOOT) != 0 && s_targetVisible) {
+            // moving fire to the cloned slot prevents both commands from attacking.
             *(u32*)(newSlot + U_BUTTONS) |= fireMask;
             *(u32*)(oldSlot + U_BUTTONS) &= ~fireMask;
             s_autoCmd = 1;
@@ -314,4 +354,4 @@ namespace aimbot {
         if (aaActive) AntiAim(newSlot, true);
         s_path = 6;
     }
-}  // namespace aimbot
+}

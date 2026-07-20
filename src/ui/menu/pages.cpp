@@ -274,4 +274,4 @@ namespace reconrender {
 
     const int kTopTabs[5] = {PAGE_MAIN, PAGE_AIMBOT, PAGE_VISUAL, PAGE_PLAYER, PAGE_SETTINGS};
     const char* const kTabLabels[5] = {"Main Menu", "Aimbot Menu", "Visual Menu", "Player Menu", "Settings Menu"};
-}  // namespace reconrender
+}

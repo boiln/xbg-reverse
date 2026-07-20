@@ -34,10 +34,12 @@ namespace reconrender {
         int m_stubIdx;
 
         Detour() : m_src(0), m_stub(0), m_installed(false), m_stubIdx(-1) {}
+
         template <class Fn>
         Fn Original() const {
             return reinterpret_cast<Fn>(m_stub);
         }
+
         bool Install(u32 s, const void* dst) {
             if (m_installed || !s || !dst) return false;
 
@@ -53,11 +55,15 @@ namespace reconrender {
             }
             m_src = (u32*)s;
             m_stub = s_stubs[m_stubIdx];
+
+            // installation saves the four instructions replaced by the detour.
             for (int i = 0; i < 4; ++i) m_orig[i] = m_src[i];
+
             int n = 0;
             for (int i = 0; i < 4; ++i) {
                 u32 ins = m_src[i];
                 if ((ins >> 26) == 18) {
+                    // copied relative branches must be retargeted from the stub address.
                     bool lk = (ins & 1) != 0;
                     PatchJump(&m_stub[n], BranchTarget(ins, &m_src[i]), lk);
                     n += 4;
@@ -77,9 +83,11 @@ namespace reconrender {
 
             return true;
         }
+
         void Remove() {
             if (!m_installed) return;
             __try {
+                // removal restores the four instructions saved during installation.
                 for (int i = 0; i < 4; ++i) {
                     m_src[i] = m_orig[i];
                     Sync(&m_src[i]);
@@ -156,9 +164,11 @@ namespace reconrender {
         u32 base = *(volatile u32*)(u64)0x83B50F40u;
 
         if (!base || client < base) {
+            // clearing rejects an unmappable sender before the original handler runs.
             message[0] = 0;
             return;
         }
+
         u32 sender = (client - base) / 0x4E100u;
 
         if (sender > 17) {
@@ -171,13 +181,16 @@ namespace reconrender {
         while (message[len] && len <= 0x688u) ++len;
 
         if (len > 0x688u) {
+            // clearing prevents the original handler from consuming an oversized command.
             message[0] = 0;
             return;
         }
 
         char lower[0x689];
         for (u32 i = 0; i <= len; ++i) lower[i] = message[i];
+
         AsciiLower(lower);
+
         const char* name = esp::PlayerName((int)sender);
         if (!name || !name[0]) name = "Unknown";
 
@@ -210,6 +223,7 @@ namespace reconrender {
 
         char xuid[17];
         U64ToHex(PlayerXuid((int)sender), xuid);
+
         if (PlayerXuid((int)sender) && StrHas(lower, xuid)) return;
         NotifyPlayer("Kick All From: ", name, 3000);
         message[0] = 0;
@@ -567,4 +581,4 @@ namespace reconrender {
         for (int i = 0; i < 400 && !s_bootExited; ++i) Sleep(5);
         Sleep(40);
     }
-}  // namespace reconrender
+}

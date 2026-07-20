@@ -201,4 +201,4 @@ namespace esp {
     }
 
     int TracerChannel(float value) { return value < 1.0f ? (int)(value * 255.0f) : 255; }
-}  // namespace esp
+}

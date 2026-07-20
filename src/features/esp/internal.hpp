@@ -6,7 +6,7 @@
 namespace reconrender {
     unsigned char* CfgByte(unsigned address);
     float* CfgFloat(unsigned address);
-}  // namespace reconrender
+}
 
 namespace esp {
     typedef unsigned int u32;
@@ -171,4 +171,4 @@ namespace esp {
     void DrawWorldItems(void* cg, char* base);
     bool ZombieEntityEligible(char* entity, int index);
     bool ZombieEntityIsEnemy(char* entity);
-}  // namespace esp
+}

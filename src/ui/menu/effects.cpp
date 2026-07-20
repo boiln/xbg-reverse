@@ -44,18 +44,18 @@ namespace reconrender {
 
         u32 forceA = *(volatile u32*)(u64)0x82CB745Cu;
         u32 forceB = *(volatile u32*)(u64)0x82CB8244u;
-
         if (forceA && forceB) {
             *(volatile u8*)(u64)(forceA + 0x18u) = *Bp(0x90B42A40u) ? 0 : 1;
             *(volatile u8*)(u64)(forceB + 0x18u) = *Bp(0x90B42A40u) ? 1 : 0;
         }
+
         u32 fixedOff = *(volatile u32*)(u64)0x83B6F49Cu;
         u32 fixedOn = *(volatile u32*)(u64)0x841DDFCCu;
-
         if (fixedOff && fixedOn) {
             *(volatile u8*)(u64)(fixedOff + 0x18u) = 0;
             *(volatile u8*)(u64)(fixedOn + 0x18u) = 1;
         }
+
         *(volatile u32*)(u64)0x84449014u = *Bp(0x90B42A40u) ? 0x70000000u : (*Bp(0x90B42A35u) ? 0u : 0x539u);
 
         if (*Bp(0x90B42A35u) && *Bp(0x90B42A40u)) {
@@ -66,6 +66,7 @@ namespace reconrender {
         static u32 dlcOriginal[8];
         static bool dlcCached = false;
         static int dlcLast = -1;
+
         int disableDlc = *Bp(0x90B42A4Cu) ? 1 : 0;
 
         if (!dlcCached) {
@@ -128,9 +129,11 @@ namespace reconrender {
             volatile u64* patchB = (volatile u64*)(u64)0x826A3A90u;
 
             if (*Bp(0x90B438D2u)) {
+                // enabling forces both predicates to their configured return values.
                 *patchA = 0x386000014E800020ull;
                 *patchB = 0x386000004E800020ull;
             } else {
+                // disabling restores both stock prologues.
                 *patchA = 0x7D8802A69181FFF8ull;
                 *patchB = 0x7D8802A6482724F9ull;
             }
@@ -160,6 +163,7 @@ namespace reconrender {
 
         typedef u64(__cdecl * ClientConnectedFn)(u32);
         ClientConnectedFn residentConnected = RealEngineResident() ? (ClientConnectedFn)(u64)0x90B19068u : 0;
+
         int local = *(volatile int*)(u64)cg;
         bool localConnected = false;
 
@@ -172,12 +176,15 @@ namespace reconrender {
         int count = *(volatile int*)(u64)(cgs + 0x150u);
         if (count <= 0) return;
         if (count > 18) count = 18;
+
         for (int i = 0; i < count; ++i) {
             bool connected = residentConnected ? residentConnected((u32)i) != 0 : esp::PlayerName(i) != 0;
             if (!connected) continue;
+
             volatile u8* pb = (volatile u8*)(0x83551A2Bull + (u64)i * 0x57F8ull);
             u8 god = *Bp(0x90B433F1 + (u32)i);
             u8 v = *pb;
+
             if (!god) {
                 if (v & 5) *pb = (u8)(v & 0xFE);
             } else if (v & 4)
@@ -209,8 +216,10 @@ namespace reconrender {
         static const WCHAR kEmpty[] = L"";
         static const WCHAR kTitle[] = L"luda v1.0.0";
         static const WCHAR kDescription[] = L"Enter a custom Gamertag. (32 character Max)\nCredit: Gamer7112";
+
         WCHAR result[0x20] = {0};
         volatile u32 status[6] = {0};
+
         u32 rc = ((ShowKeyboardFn)(u64)0x816C1F38u)(0, 0, kEmpty, kTitle, kDescription, result, 0x20, status);
 
         if (rc != 0x3E5u) {
@@ -351,4 +360,4 @@ namespace reconrender {
 
         return 0;
     }
-}  // namespace reconrender
+}

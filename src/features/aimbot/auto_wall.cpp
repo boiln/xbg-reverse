@@ -52,7 +52,7 @@ namespace autowall {
     static u32 Bits(float f) { return *(u32*)&f; }
 
     static bool InitFireParams(FireParams* fp, void* cg, const float eye[3], const float end[3]) {
-        // The TU18 trace ABI expects normalized direction and endpoints in this layout.
+        // fire parameters require normalized direction and mirrored start fields.
         if (!fp || !cg || !eye || !end) return false;
         Clear(fp, sizeof(*fp));
         U32(fp, 0x00) = 0x3FE;
@@ -92,7 +92,7 @@ namespace autowall {
 
     static bool RetraceType14(void* cg, void* targetEnt, int target, FireParams* fp, TraceResult* trace,
                               bool spectatorMode) {
-        // Type-14 hits are retraced toward the target before the wall loop continues.
+        // trace type 14 requires a target-facing retry.
         TraceAimPointFn aimPointFn = (TraceAimPointFn)kTraceAimPoint;
         BulletTraceFn traceFn = (BulletTraceFn)kBulletTrace;
         ContinueTraceFn continueFn = (ContinueTraceFn)kContinueTrace;
@@ -147,7 +147,6 @@ namespace autowall {
 
         return true;
     }
-
     static void BuildReverse(const FireParams* forward, const TraceResult* hit, const float initialHit[3],
                              FireParams* reverse, TraceResult* reverseTrace) {
         Copy(reverse, forward, sizeof(*reverse));
@@ -171,7 +170,7 @@ namespace autowall {
 
     bool Evaluate(void* cg, void* entities, int localClient, int targetClient, const float eye[3],
                   const float targetPoint[3], bool spectatorMode, Result* result) {
-        // Reset diagnostics first so each failure path returns a complete result record.
+        // clearing first keeps failure diagnostics deterministic.
         if (result) {
             result->hit = false;
             result->direct = false;
@@ -201,8 +200,6 @@ namespace autowall {
         if (!weapon || !viewWeapon) return false;
         result->stage = 2;
 
-        
-
         WeaponDefFn weaponDefFn = (WeaponDefFn)kWeaponDef;
         PenetrationDepthFn depthFn = (PenetrationDepthFn)kPenetrationDepth;
         BulletTraceFn traceFn = (BulletTraceFn)kBulletTrace;
@@ -230,10 +227,10 @@ namespace autowall {
         TraceResult tr;
         if (!InitFireParams(&fp, cg, eye, targetPoint)) return false;
         Clear(&tr, sizeof(tr));
-        
+
         const int initialTrace = traceFn(0, &fp, targetEnt, &tr, 0, 0);
         result->stage = 4;
-        
+
         if (!initialTrace) return false;
         result->stage = 5;
 
@@ -269,12 +266,9 @@ namespace autowall {
             const u32 forwardId = hitIdFn(&tr);
             result->forwardHitId = forwardId;
 
-            
-
-            
             const int advanced = continueFn(&fp, &tr, 0.135f);
             result->stage = 102 + wall * 10;
-            
+
             if (!advanced) {
                 result->reason = 20 + wall;
 
@@ -396,7 +390,6 @@ namespace autowall {
             }
             ++wallsWalked;
         }
-
         result->stage = 200;
         result->fireHitId = U32(&fp, 0x04);
 
@@ -417,8 +410,7 @@ namespace autowall {
         result->score = score;
         result->walls = wallsWalked;
         result->stage = 202;
-        
 
         return true;
     }
-}  // namespace autowall
+}
