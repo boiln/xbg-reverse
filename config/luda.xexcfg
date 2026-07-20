@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xex>
-  <!-- sysdll @ 0x91D00000 (system-DLL band where xam/hud/jrpc load) - the proven
-       RTM module-load region (kin.xex loads here). The reconstruction is being made
-       fully relocatable (relocation-finish pass) so this base is valid. -->
   <baseaddr addr="0x91D00000" />
   <sysdll />
   <format>
