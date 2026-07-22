@@ -41,16 +41,24 @@ namespace esp {
     static bool IsZero(const Vec3& v) { return v.x == 0.0f && v.y == 0.0f && v.z == 0.0f; }
 
     static void DrawBone(void* base, void* cg, int idx, const char* ca, const char* cb, ARGB col) {
-        Vec3 a, b;
-        Vec2 sa, sb;
+        Vec3 a;
+        Vec3 b;
+        Vec2 sa;
+        Vec2 sb;
+
         if (!TagPos(base, idx, ca, &a) || !TagPos(base, idx, cb, &b)) return;
         if (IsZero(a) || IsZero(b)) return;
         if (!W2S(cg, a, &sa) || !W2S(cg, b, &sb)) return;
+
         DrawLine(sa.x, sa.y, sb.x, sb.y, col);
     }
 
     struct Box {
-        float l, r, top, bot, distance;
+        float l;
+        float r;
+        float top;
+        float bot;
+        float distance;
         bool ok;
     };
     static Vec3 HeadTop(void* base, int idx, char* ent) {
@@ -70,24 +78,37 @@ namespace esp {
         Box b;
         b.ok = false;
         b.distance = 0.0f;
-        Vec3 feet = RV3(ent, E_ORIGIN), head = {0.0f, 0.0f, 0.0f};
+
+        Vec3 feet = RV3(ent, E_ORIGIN);
+        Vec3 head = {0.0f, 0.0f, 0.0f};
+
         TagPos(base, idx, "j_head", &head);
-        Vec2 sh, sf;
+
+        Vec2 sh;
+        Vec2 sf;
+
         if (!W2S(cg, head, &sh) || !W2S(cg, feet, &sf)) return b;
+
         int local = RI(cg, CG_CLIENTNUM);
         Vec3 localOrigin = RV3((char*)base + local * ENT_STRIDE, E_ORIGIN);
         Vec3 targetOrigin = RV3(ent, E_ORIGIN);
-        float dx = targetOrigin.x - localOrigin.x, dy = targetOrigin.y - localOrigin.y,
-              dz = targetOrigin.z - localOrigin.z;
+
+        float dx = targetOrigin.x - localOrigin.x;
+        float dy = targetOrigin.y - localOrigin.y;
+        float dz = targetOrigin.z - localOrigin.z;
         float dist = sqrtf(dx * dx + dy * dy + dz * dz);
+
         b.distance = dist;
 
         if (dist > 0.0f) {
             sh.y -= 10000.0f / dist;
             sf.y += 5000.0f / dist;
         }
+
         float h = sf.y - sh.y;
-        float w = h * 0.50f, cx = sh.x;
+        float w = h * 0.50f;
+        float cx = sh.x;
+
         b.top = sh.y;
         b.bot = sf.y;
         b.l = cx - w * 0.5f;
@@ -153,16 +174,22 @@ namespace esp {
     }
     void Box3D(void* base, void* cg, int idx, char* ent, ARGB col) {
         Vec3 o = RV3(ent, E_ORIGIN);
-        Vec3 mins, maxs;
+        Vec3 mins;
+        Vec3 maxs;
+
         int modelHandle = RI(ent, 0x1D0);
         void* dobj = (void*)(u64)(u32)pDObj(modelHandle, 0);
+
         if (!dobj) return;
+
         pDObjBounds(dobj, &mins, &maxs);
         if (!(mins.x <= maxs.x && mins.y <= maxs.y && mins.z <= maxs.z)) return;
+
         short entityType = *(short*)(ent + E_TYPE);
         void** cgsPointer = (void**)(u64)A_CGS_Pointer;
         void* cgs = cgsPointer ? *cgsPointer : 0;
         int maxClients = cgs ? RI(cgs, 0x150) : 0;
+
         bool specialPlayerBounds = (entityType & 0x10) == 0 && (entityType & 1) != 0 && idx < maxClients;
 
         if ((entityType & 0x10) != 0 && CB(0x90B4328E) != 0 && RI(ent, 0x1AC) != 0 && EntityAlivePredicate(ent))
@@ -191,21 +218,33 @@ namespace esp {
         Vec3 world[8] = {{mins.x, mins.y, mins.z}, {maxs.x, mins.y, mins.z}, {maxs.x, maxs.y, mins.z},
                          {mins.x, maxs.y, mins.z}, {mins.x, mins.y, maxs.z}, {maxs.x, mins.y, maxs.z},
                          {maxs.x, maxs.y, maxs.z}, {mins.x, maxs.y, maxs.z}};
-        Vec3 ang = RV3(ent, E_ANGLES), cc[8];
+
+        Vec3 ang = RV3(ent, E_ANGLES);
+        Vec3 cc[8];
+
         for (int i = 0; i < 8; ++i) cc[i] = RotatePointExact(world[i], o, ang);
+
         Vec2 s[8];
+
         for (int i = 0; i < 8; ++i)
             if (!W2S(cg, cc[i], &s[i])) return;
+
         static const int E[12][2] = {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6},
                                      {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}};
+
         for (int i = 0; i < 12; ++i) {
-            int a = E[i][0], d = E[i][1];
+            int a = E[i][0];
+            int d = E[i][1];
+
             DrawLine(s[a].x, s[a].y, s[d].x, s[d].y, col);
         }
     }
     static void DrawSnap(void* cg, const Vec2& target, ARGB c) {
         char* rd = (char*)cg + CG_REFDEF;
-        float W = (float)RI(rd, RD_W), H = (float)RI(rd, RD_H);
+
+        float W = (float)RI(rd, RD_W);
+        float H = (float)RI(rd, RD_H);
+
         int mode = CB(V_SNAPLINES);
         Vec2 source = {W * 0.5f, mode == 3 ? 30.0f : mode == 2 ? H * 0.5f : H - 30.0f};
 
@@ -234,12 +273,18 @@ namespace esp {
     }
     void DrawPointer(void* cg, char* ent, ARGB col) {
         char* rd = (char*)cg + CG_REFDEF;
-        float W = (float)RI(rd, RD_W), H = (float)RI(rd, RD_H);
+
+        float W = (float)RI(rd, RD_W);
+        float H = (float)RI(rd, RD_H);
+
         if (W <= 0.0f || H <= 0.0f) return;
+
         Vec3 o = RV3(ent, E_ORIGIN);
         Vec2 sp;
+
         bool projected = W2S(cg, o, &sp);
         if (projected && sp.x >= 0.0f && sp.x <= W && sp.y >= 0.0f && sp.y <= H) return;
+
         float centerX = W * 0.5f;
         float centerY = H * 0.5f;
         float dirX;
@@ -284,7 +329,9 @@ namespace esp {
     static const char* FmtDist(const Vec3& e, const Vec3& l, char* buf) {
         Vec3 d = {e.x - l.x, e.y - l.y, e.z - l.z};
         float m = sqrtf(d.x * d.x + d.y * d.y + d.z * d.z) * 1.20319998f;
-        int whole = (int)m, frac = (int)((m - whole) * 100.0f + 0.5f);
+
+        int whole = (int)m;
+        int frac = (int)((m - whole) * 100.0f + 0.5f);
 
         if (frac >= 100) {
             whole++;
@@ -319,11 +366,16 @@ namespace esp {
         Vec3 o = RV3(ent, E_ORIGIN);
         Vec3 feetPoint = o;
         feetPoint.z -= 5.0f;
+
         Vec3 head = HeadTop(base, idx, ent);
-        Vec2 sf, sh;
+        Vec2 sf;
+        Vec2 sh;
+
         bool okFeet = W2S(cg, feetPoint, &sf);
         bool okHead = W2S(cg, head, &sh);
+
         if (!okHead && !okFeet) return;
+
         float baseX = sf.x;
 
         int type = CB(V_TYPE);

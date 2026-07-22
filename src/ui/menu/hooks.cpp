@@ -241,8 +241,10 @@ namespace reconrender {
 
     static const char* ResolveNetSenderName(u32 context) {
         if (!context) return "";
+
         typedef u32(__cdecl * PartyGetActiveFn)();
         typedef u32(__cdecl * PartyMemberAddressKeyFn)(u32, int);
+
         PartyGetActiveFn getActive = (PartyGetActiveFn)(u64)A_PartyGetActive;
         PartyMemberAddressKeyFn memberKey = (PartyMemberAddressKeyFn)(u64)A_PartyMemberAddressKey;
 
@@ -260,7 +262,9 @@ namespace reconrender {
 
             u32 party = getActive();
             if (!party) return "";
+
             u32 key = *(volatile u32*)(u64)(context + 0x10u);
+
             for (int i = 0; i < 18; ++i) {
                 if (memberKey(party, i) != key) continue;
                 const char* name = ClientTableName(i);
@@ -306,6 +310,7 @@ namespace reconrender {
     static bool ServerCommandAllowed(u32 localClientNum) {
         typedef const char*(__cdecl * CmdArgvFn)(int);
         typedef int(__cdecl * AtoiFn)(const char*);
+
         CmdArgvFn cmdArgv = (CmdArgvFn)(u64)A_CmdArgv;
         AtoiFn atoiFn = (AtoiFn)(u64)A_Atoi;
 
@@ -314,7 +319,9 @@ namespace reconrender {
 
         const char* arg1Text = cmdArgv(1);
         u32 arg1 = (u32)atoiFn(arg1Text);
+
         const char* arg2Text = cmdArgv(2);
+
         atoiFn(arg2Text);
 
         u32 cg = *(volatile u32*)(u64)0x82BBAE68u;
@@ -418,10 +425,13 @@ namespace reconrender {
 
     typedef int(__cdecl* TagWorldFn)(void*, void*, u32, void*, Vec3*);
     typedef void(__cdecl* GetPlayerEyeFn)(void*, Vec3*, u32);
+
     static int __cdecl hkTagWorld(void* centity, void* dobj, u32 tag, void* axis, Vec3* out) {
         TagWorldFn orig = s_tagworld.Original<TagWorldFn>();
         int result = orig ? orig(centity, dobj, tag, axis, out) : 0;
+
         u16 headTag = s_thirdPersonHeadTag;
+
         if (!out || !headTag || tag != (u32)headTag || !*Bp(0x90B433A1)) return result;
 
         void* cg = *(void**)(u64)0x82BBAE68u;
@@ -432,6 +442,7 @@ namespace reconrender {
         __try {
             void* playerState = (void*)(u64)(base + 0x480A8u);
             GetPlayerEyeFn getEye = (GetPlayerEyeFn)(u64)A_BG_GetPlayerEyePosition;
+
             getEye(playerState, out, *(volatile u32*)playerState);
             out->z = *(volatile float*)(u64)(base + 0x480D8u) + *Fp(0x90B438F0);
         } __except (EXCEPTION_EXECUTE_HANDLER) {

@@ -96,8 +96,11 @@ namespace reconrender {
     void Adjust(Option& o, int dir) {
         if (o.kind == K_SLIDER || o.kind == K_SLIDER_TOGGLE) {
             if (!o.backFloat) return;
-            float lo = o.lo, hi = o.hi;
+
+            float lo = o.lo;
+            float hi = o.hi;
             float current = *o.backFloat;
+
             union {
                 float f;
                 u32 u;
@@ -248,8 +251,12 @@ namespace reconrender {
                     float frac = (o.hi > o.lo) ? (val - o.lo) / (o.hi - o.lo) : 0.0f;
                     if (frac < 0.0f) frac = 0.0f;
                     if (frac > 1.0f) frac = 1.0f;
-                    float bw = 80.0f, bh = 12.0f;
-                    float bx = rx - bw, by = ry + (L.rowH - bh) * 0.5f;
+
+                    float bw = 80.0f;
+                    float bh = 12.0f;
+                    float bx = rx - bw;
+                    float by = ry + (L.rowH - bh) * 0.5f;
+
                     DrawBorder(bx, by, bw, bh, 1.0f, kColAccent);
                     DrawRect(bx + 1.0f, by + 1.0f, (bw - 2.0f) * frac, bh - 2.0f, kColAccent);
                     FmtSlider(o, buf);
@@ -261,8 +268,12 @@ namespace reconrender {
                     float frac = (o.hi > o.lo) ? (val - o.lo) / (o.hi - o.lo) : 0.0f;
                     if (frac < 0.0f) frac = 0.0f;
                     if (frac > 1.0f) frac = 1.0f;
-                    float bw = 80.0f, bh = 12.0f;
-                    float bx = rx - bw, by = ry + (L.rowH - bh) * 0.5f;
+
+                    float bw = 80.0f;
+                    float bh = 12.0f;
+                    float bx = rx - bw;
+                    float by = ry + (L.rowH - bh) * 0.5f;
+
                     DrawBorder(bx, by, bw, bh, 1.0f, kColAccent);
                     DrawRect(bx + 1.0f, by + 1.0f, (bw - 2.0f) * frac, bh - 2.0f, kColAccent);
                     FmtSlider(o, buf);
@@ -310,8 +321,14 @@ namespace reconrender {
         if (TopTabIndex(active) < 0) active = ParentPage(active);
         if (TopTabIndex(active) < 0) active = ParentPage(active);
 
-        float tabTop = bodyTop + bodyH, gap = 12.0f, side = L.pad, usableW = L.menuW - side * 2.0f, sumW = 0;
+        float tabTop = bodyTop + bodyH;
+        float gap = 12.0f;
+        float side = L.pad;
+        float usableW = L.menuW - side * 2.0f;
+        float sumW = 0;
+
         for (int i = 0; i < 5; ++i) sumW += TextW(kTabLabels[i]);
+
         float ts = L.scale;
 
         if (sumW > 0 && sumW + gap * 4 > usableW) {
@@ -319,7 +336,10 @@ namespace reconrender {
             sumW = 0;
             for (int i = 0; i < 5; ++i) sumW += TextWSc(kTabLabels[i], ts);
         }
-        float tx = x + side + (usableW - (sumW + gap * 4)) * 0.5f, tty = TextY(tabTop, L.tabH);
+
+        float tx = x + side + (usableW - (sumW + gap * 4)) * 0.5f;
+        float tty = TextY(tabTop, L.tabH);
+
         for (int i = 0; i < 5; ++i) {
             DrawTextSc(kTabLabels[i], tx, tty, ts, kTopTabs[i] == active ? kColAccent : kColText);
             tx += TextWSc(kTabLabels[i], ts) + gap;
@@ -330,7 +350,10 @@ namespace reconrender {
 
     static const char* GLYPH_OPEN_HINT = "^BXENONButtontrigL^ + ^BXENONButtondpadL^ To Open/Close luda v1.0.0";
 
-    static u32 s_fpsCount = 0, s_fpsLast = 0, s_fps = 0;
+    static u32 s_fpsCount = 0;
+    static u32 s_fpsLast = 0;
+    static u32 s_fps = 0;
+
     void TickFps() {
         u32 now = GetTickCount();
         s_fpsCount++;
@@ -380,19 +403,29 @@ namespace reconrender {
 
     void WatermarkHUD() {
         if (*Bp(0x90B433A8)) {
-            float hpad = 8.0f, hw = HudW(GLYPH_OPEN_HINT) + hpad * 2, hh = L.rowH;
+            float hpad = 8.0f;
+            float hw = HudW(GLYPH_OPEN_HINT) + hpad * 2;
+            float hh = L.rowH;
+
             float hx = 8.0f + *Fp(0x90B43A78u);
             float hy = L.scrH - 8.0f - *Fp(0x90B43A7Cu) - hh;
+
             DrawRect(hx, hy, hw, hh, kColBar);
             DrawBorder(hx, hy, hw, hh, L.border, kColBorder);
             DrawTextS(GLYPH_OPEN_HINT, hx + hpad, TextY(hy, hh), kColText);
         }
 
-        char fpsBuffer[24], pingBuffer[24];
+        char fpsBuffer[24];
+        char pingBuffer[24];
+
         BuildKV(fpsBuffer, "FPS: ", (int)s_fps);
         BuildKV(pingBuffer, "Ping: ", esp::LocalPing());
+
         const char* lines[3] = {kTitle, fpsBuffer, pingBuffer};
-        float height = L.rowH, gap = 4.0f, padding = 8.0f;
+
+        float height = L.rowH;
+        float gap = 4.0f;
+        float padding = 8.0f;
 
         float right = L.scrW - 8.0f - *Fp(0x90B43A78u);
         float top = 8.0f + *Fp(0x90B43A7Cu);
@@ -415,8 +448,11 @@ namespace reconrender {
             legend = "^BXENONButtonA^ Select";
         else
             legend = "^BXENONButtonA^ Select   ^BXENONButtonB^ Main Menu";
+
         float lw = VisTextW(legend);
-        float lx = (L.scrW - lw) * 0.5f, ly = L.scrH - 52.0f;
+        float lx = (L.scrW - lw) * 0.5f;
+        float ly = L.scrH - 52.0f;
+
         DrawTextS(legend, lx, TextY(ly, L.rowH), kColText);
     }
 

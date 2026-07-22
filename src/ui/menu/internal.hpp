@@ -1,6 +1,5 @@
 #pragma once
 
-#include "luda/diagnostics/logger.hpp"
 #include "luda/features/aimbot.hpp"
 #include "luda/features/esp.hpp"
 #include "luda/ui/menu.hpp"
@@ -60,6 +59,7 @@ namespace reconrender {
     struct Vec3 {
         float x, y, z;
     };
+
     typedef int (*FindAsset_t)(unsigned, const char*, int);
     typedef void (*DrawText_t)(const char*, int, int, float, float, float, float, float, const Vec4*, int);
     typedef void (*Stretch_t)(float, float, float, float, float, float, float, float, const Vec4*, int);

@@ -35,7 +35,9 @@ namespace aimbot {
     }
 
     float AimFovPixels() { return *(volatile float*)0x83C59ED8 * 2.0f; }
-    volatile float s_viewYaw = 0.0f, s_viewPitch = 0.0f;
+    volatile float s_viewYaw = 0.0f;
+    volatile float s_viewPitch = 0.0f;
+
     void* CG() {
         void** pp = (void**)(u64)A_CG_Pointer;
 
@@ -68,17 +70,25 @@ namespace aimbot {
 
     bool WorldToScreen(void* cg, const Vec3& world, Vec2* out) {
         if (!cg || !out) return false;
+
         char* rd = (char*)cg + CG_REFDEF;
+
         Vec3 eye = RV3(rd, RD_ORG);
         Vec3 forward = RV3(rd, RD_AXIS);
         Vec3 right = RV3(rd, RD_AXIS + 12);
         Vec3 up = RV3(rd, RD_AXIS + 24);
+
         Vec3 d = {world.x - eye.x, world.y - eye.y, world.z - eye.z};
+
         float tx = d.x * right.x + d.y * right.y + d.z * right.z;
         float ty = d.x * up.x + d.y * up.y + d.z * up.z;
         float tz = d.x * forward.x + d.y * forward.y + d.z * forward.z;
-        float fx = RF(rd, RD_FOV), fy = RF(rd, RD_FOV + 4);
+
+        float fx = RF(rd, RD_FOV);
+        float fy = RF(rd, RD_FOV + 4);
+
         if (tz < 0.1f || fx == 0.0f || fy == 0.0f) return false;
+
         out->x = RI(rd, RD_W) * 0.5f * (1.0f - tx / fx / tz);
         out->y = RI(rd, RD_H) * 0.5f * (1.0f - ty / fy / tz);
 
@@ -104,7 +114,9 @@ namespace aimbot {
     bool TagPos(char* base, int idx, const char* tag, Vec3* out) {
         char* e = base + idx * ENT_STRIDE;
         int dobj = pDObj(idx, 0);
+
         if (!e || !dobj) return false;
+
         int ti = pSL(tag, 0);
 
         return pTag(e, dobj, ti, out) != 0;
@@ -132,9 +144,11 @@ namespace aimbot {
             float oldX = RF(entity, 0x1E8);
             float oldY = RF(entity, 0x1EC);
             float oldZ = RF(entity, 0x1F0);
+
             float curX = RF(entity, E_ORIGIN + 0);
             float curY = RF(entity, E_ORIGIN + 4);
             float curZ = RF(entity, E_ORIGIN + 8);
+
             if (!CB(CFG_PING_PREDICT)) {
                 float amount = CF(CFG_PREDICTION_AMOUNT);
                 if (amount > 0.1f) {

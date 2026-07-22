@@ -26,8 +26,12 @@ namespace reconrender {
     }
     ARGB PackRGBA(const float* rgba, ARGB fallback) {
         if (!rgba) return fallback;
-        int r = (int)(rgba[0] * 255.0f), g = (int)(rgba[1] * 255.0f);
-        int b = (int)(rgba[2] * 255.0f), a = (int)(rgba[3] * 255.0f);
+
+        int r = (int)(rgba[0] * 255.0f);
+        int g = (int)(rgba[1] * 255.0f);
+        int b = (int)(rgba[2] * 255.0f);
+        int a = (int)(rgba[3] * 255.0f);
+
         if (r < 0) r = 0;
         if (r > 255) r = 255;
         if (g < 0) g = 0;
@@ -49,13 +53,17 @@ namespace reconrender {
         kColBg = ((ARGB)alpha << 24) | 0x00151515u;
     }
 
-    int s_font = 0, s_white = 0;
+    int s_font = 0;
+    int s_white = 0;
     Layout L;
 
     void ComputeLayout() {
         if (!s_font) s_font = pFindAsset(0x15, "fonts/720/normalFont", 0xFFFFFFFF);
         if (!s_white) s_white = pFindAsset(0x06, "white", 0xFFFFFFFF);
-        float w = 1280.0f, h = 720.0f;
+
+        float w = 1280.0f;
+        float h = 720.0f;
+
         L.scrW = w;
         L.scrH = h;
         L.ui = 1.0f;

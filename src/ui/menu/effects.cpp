@@ -162,6 +162,7 @@ namespace reconrender {
         if (!cg || !cgs) return;
 
         typedef u64(__cdecl * ClientConnectedFn)(u32);
+
         ClientConnectedFn residentConnected = RealEngineResident() ? (ClientConnectedFn)(u64)0x90B19068u : 0;
 
         int local = *(volatile int*)(u64)cg;
@@ -213,6 +214,7 @@ namespace reconrender {
         typedef u32(__cdecl * ShowKeyboardFn)(u32, u32, const WCHAR*, const WCHAR*, const WCHAR*, WCHAR*, u32,
                                               volatile u32*);
         typedef void(__cdecl * CancelKeyboardFn)(u32);
+
         static const WCHAR kEmpty[] = L"";
         static const WCHAR kTitle[] = L"luda v1.0.0";
         static const WCHAR kDescription[] = L"Enter a custom Gamertag. (32 character Max)\nCredit: Gamer7112";
@@ -254,8 +256,10 @@ namespace reconrender {
         }
         s_keyboardTarget = target;
         s_keyboardStop = false;
+
         unsigned long tid = 0;
         int rc = ExCreateThread(&s_keyboardThread, 0, &tid, 0, RenameKeyboardWorker, 0, 0x04000426u);
+
         if (rc >= 0) return true;
         s_keyboardThread = 0;
         NotifyMsg("Keyboard UI failed to open, try again.", 3000);
@@ -279,16 +283,20 @@ namespace reconrender {
 
     void SendCrashPlayerExact(int target) {
         typedef void(__cdecl * ServerCommandFn)(u32, u32, const char*);
+
         ServerCommandFn send = (ServerCommandFn)(u64)0x8242FB70u;
+
         send((u32)target, 0, (const char*)kCrashPayload0);
         send((u32)target, 0, (const char*)kCrashPayload1);
         send((u32)target, 0, (const char*)kCrashPayload2);
 
         u32 cg = *(volatile u32*)(u64)A_CG_POINTER;
         u32 encoded = ((0u - cg - 0x7D66CF38u) >> 2) - 0x1A223u;
+
         char dynamicPayload[64];
         char number[16];
         int out = 0;
+
         dynamicPayload[out++] = 'i';
         dynamicPayload[out++] = ' ';
         ItoA((s32)encoded, number);

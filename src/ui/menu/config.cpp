@@ -376,8 +376,11 @@ namespace reconrender {
     void ResolveThirdPersonHeadTag() {
         if (s_thirdPersonHeadTag) return;
         typedef short(__cdecl * SLGetStringFn)(const char*, int);
+
         SLGetStringFn getString = (SLGetStringFn)(u64)A_SL_GetString;
+
         short tag = getString("j_head", 0);
+
         if (tag > 0) s_thirdPersonHeadTag = (u16)tag;
     }
 }

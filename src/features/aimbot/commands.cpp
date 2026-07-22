@@ -226,10 +226,14 @@ namespace aimbot {
         __try {
             int clientInfoIndex = RI(e, E_CLIENTNUM);
             if (clientInfoIndex < 0 || clientInfoIndex >= 18) return;
+
             float* clientPitch = (float*)((char*)cg + CG_CLIENTINFO + clientInfoIndex * CI_STRIDE + CI_FAKEPITCH);
+
             if (CB(AA_PITCH) != 0) *clientPitch = s_aaFakePitch - AA_PITCH_REF;
             if (CB(AA_YAW) != 0) {
-                float basePitch, baseYaw;
+                float basePitch;
+                float baseYaw;
+
                 ViewRef(&basePitch, &baseYaw);
                 *(float*)(e + E_YAW) = baseYaw + s_aaFakeYawDelta;
             }

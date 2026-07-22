@@ -178,7 +178,9 @@ namespace aimbot {
 
             float pixelCost = 0.0f;
             if (projected) {
-                float pixelDx = screen.x - centerX, pixelDy = screen.y - centerY;
+                float pixelDx = screen.x - centerX;
+                float pixelDy = screen.y - centerY;
+
                 pixelCost = pixelDx * pixelDx + pixelDy * pixelDy;
             }
             if (distance < best) {

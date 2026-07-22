@@ -50,10 +50,14 @@ namespace esp {
 
         if (base && localIdx >= 0 && localIdx < 18) localOrg = RV3(base + localIdx * ENT_STRIDE, E_ORIGIN);
         if (base && !zombieSession) DrawWorldItems(cg, base);
-        bool drawE = CB(V_ENEMY) != 0, drawF = CB(V_FRIENDLY) != 0;
+
+        bool drawE = CB(V_ENEMY) != 0;
+        bool drawF = CB(V_FRIENDLY) != 0;
+
         if ((!drawE && !drawF) || !base) return;
 
-        ARGB colEnemy = Pack(CFp(C_ENEMY), 0xFFFF3030), colFriend = Pack(CFp(C_FRIENDLY), 0xFF30FF30);
+        ARGB colEnemy = Pack(CFp(C_ENEMY), 0xFFFF3030);
+        ARGB colFriend = Pack(CFp(C_FRIENDLY), 0xFF30FF30);
 
         if (zombieSession && drawF) {
             void** cgsPointer = (void**)(u64)A_CGS_Pointer;
@@ -64,14 +68,20 @@ namespace esp {
                 DrawPlayer(base, cg, i, Entity(base, i), colFriend, localOrg);
             }
         }
+
         int scanCount = zombieSession ? 0x401 : 18;
+
         for (int i = 0; i < scanCount; ++i) {
             if (i == localIdx) continue;
+
             char* ent = Entity(base, i);
             if (!ent) continue;
+
             if (zombieSession) {
                 if (!ZombieEntityEligible(ent, i)) continue;
+
                 bool enemy = ZombieEntityIsEnemy(ent);
+
                 if (enemy && drawE) {
                     DrawPlayer(base, cg, i, ent, colEnemy, localOrg);
                     if (CB(V_POINTERS) && CB(0x90B4328D) == 0) DrawPointer(cg, ent, colEnemy);
@@ -82,7 +92,9 @@ namespace esp {
                 }
                 continue;
             }
+
             if (!PlayerEligible(cg, base, i)) continue;
+
             char* ci = (char*)cg + CG_CLIENTINFO + i * CI_STRIDE;
             if (RI(ci, 0) == 0 && RB(ci, CI_NAME) == 0) continue;
 

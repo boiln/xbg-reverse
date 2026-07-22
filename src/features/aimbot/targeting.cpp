@@ -156,9 +156,13 @@ namespace aimbot {
 
     void AngleVectors(float pitch, float yaw, float roll, float* fwd, float* right, float* up) {
         const float D = 0.017453292519943295f;
-        float sp = sinf(pitch * D), cp = cosf(pitch * D);
-        float sy = sinf(yaw * D), cy = cosf(yaw * D);
-        float sr = sinf(roll * D), cr = cosf(roll * D);
+
+        float sp = sinf(pitch * D);
+        float cp = cosf(pitch * D);
+        float sy = sinf(yaw * D);
+        float cy = cosf(yaw * D);
+        float sr = sinf(roll * D);
+        float cr = cosf(roll * D);
 
         if (fwd) {
             fwd[0] = cp * cy;
@@ -192,14 +196,19 @@ namespace aimbot {
     volatile bool s_hasTarget = false;
     volatile bool s_aaHasTarget = false;
     volatile bool s_targetVisible = false;
-    volatile float s_aimYaw = 0.0f, s_aimPitch = 0.0f;
-    volatile float s_aaAimYaw = 0.0f, s_aaAimPitch = 0.0f;
+    volatile float s_aimYaw = 0.0f;
+    volatile float s_aimPitch = 0.0f;
+    volatile float s_aaAimYaw = 0.0f;
+    volatile float s_aaAimPitch = 0.0f;
 
-    float s_spinYaw = 0.0f, s_spinPitch = 0.0f;
-    int s_aaTogYaw = 0, s_aaTogPit = 0;
+    float s_spinYaw = 0.0f;
+    float s_spinPitch = 0.0f;
+    int s_aaTogYaw = 0;
+    int s_aaTogPit = 0;
     u32 s_aaRand = 0x1234567u;
     volatile bool s_aaActive = false;
-    volatile float s_aaFakeYaw = 0.0f, s_aaFakePitch = 0.0f;
+    volatile float s_aaFakeYaw = 0.0f;
+    volatile float s_aaFakePitch = 0.0f;
     volatile float s_aaFakeYawDelta = 0.0f;
     bool AntiAimActive() { return s_aaActive; }
     float AntiAimFakeYaw() { return s_aaFakeYaw; }
@@ -210,7 +219,13 @@ namespace aimbot {
         return (s_aaRand >> 16) & 0x7FFF;
     }
 
-    volatile int s_call = 0, s_reach = 0, s_cand = 0, s_cost = -1, s_wrote = 0, s_cmdIn = 0, s_myAim = 0;
+    volatile int s_call = 0;
+    volatile int s_reach = 0;
+    volatile int s_cand = 0;
+    volatile int s_cost = -1;
+    volatile int s_wrote = 0;
+    volatile int s_cmdIn = 0;
+    volatile int s_myAim = 0;
     int DbgCall() { return s_call; }
     int DbgReach() { return s_reach; }
     int DbgCand() { return s_cand; }
@@ -220,7 +235,8 @@ namespace aimbot {
     int DbgMyAim() { return s_myAim; }
 
     volatile int s_path = 0;
-    volatile int s_pathMode = -1, s_pathHasTarget = -1;
+    volatile int s_pathMode = -1;
+    volatile int s_pathHasTarget = -1;
     int DbgPath() { return s_path; }
     int DbgPathMode() { return s_pathMode; }
     int DbgPathHasTarget() { return s_pathHasTarget; }

@@ -24,9 +24,12 @@ namespace esp {
     DrawTracer3D_t pDrawTracer3D = (DrawTracer3D_t)A_DrawTracer3D;
     SessionPredicate_t pIsZombieSession = (SessionPredicate_t)A_IsZombieSession;
 
-    int s_font = 0, s_white = 0;
-    int s_radarState = -1, s_crossState = -1;
-    bool s_radarOwn = false, s_crossOwn = false;
+    int s_font = 0;
+    int s_white = 0;
+    int s_radarState = -1;
+    int s_crossState = -1;
+    bool s_radarOwn = false;
+    bool s_crossOwn = false;
     ARGB s_accent = 0xFFBD89FF;
     TracerRecord s_tracers[19];
     int s_tracerCount = 0;
@@ -51,7 +54,12 @@ namespace esp {
     }
     ARGB Pack(const float* rgba, ARGB fb) {
         if (!rgba || rgba[3] <= 0.0f) return fb;
-        int r = (int)(rgba[0] * 255), g = (int)(rgba[1] * 255), b = (int)(rgba[2] * 255), a = (int)(rgba[3] * 255);
+
+        int r = (int)(rgba[0] * 255);
+        int g = (int)(rgba[1] * 255);
+        int b = (int)(rgba[2] * 255);
+        int a = (int)(rgba[3] * 255);
+
         if (r < 0) r = 0;
         if (r > 255) r = 255;
         if (g < 0) g = 0;
@@ -66,15 +74,24 @@ namespace esp {
 
     bool W2S(void* cg, const Vec3& w, Vec2* o) {
         if (!cg || !o) return false;
+
         char* rd = (char*)cg + CG_REFDEF;
         char* placement = (char*)(u64)A_ScreenPlacement;
+
         Vec3 vo = RV3(rd, RD_ORG);
-        Vec3 fwd = RV3(rd, RD_AXIS), right = RV3(rd, RD_AXIS + 12), up = RV3(rd, RD_AXIS + 24);
-        float fx = RF(rd, RD_FOV), fy = RF(rd, RD_FOV + 4);
+        Vec3 fwd = RV3(rd, RD_AXIS);
+        Vec3 right = RV3(rd, RD_AXIS + 12);
+        Vec3 up = RV3(rd, RD_AXIS + 24);
+
+        float fx = RF(rd, RD_FOV);
+        float fy = RF(rd, RD_FOV + 4);
+
         Vec3 d = {w.x - vo.x, w.y - vo.y, w.z - vo.z};
+
         float tx = d.x * right.x + d.y * right.y + d.z * right.z;
         float ty = d.x * up.x + d.y * up.y + d.z * up.z;
         float tz = d.x * fwd.x + d.y * fwd.y + d.z * fwd.z;
+
         float width = RF(placement, 0x40);
         float height = RF(placement, 0x44);
 
@@ -140,9 +157,17 @@ namespace esp {
 
     void DrawLine(float x0, float y0, float x1, float y1, ARGB col) {
         if (!s_white) return;
-        float dx = x1 - x0, dy = y1 - y0, len = sqrtf(dx * dx + dy * dy);
+
+        float dx = x1 - x0;
+        float dy = y1 - y0;
+        float len = sqrtf(dx * dx + dy * dy);
+
         if (len < 0.01f) return;
-        float ang = atanf(dy / dx) * 57.295776f, thick = 1.0f, c[4];
+
+        float ang = atanf(dy / dx) * 57.295776f;
+        float thick = 1.0f;
+        float c[4];
+
         Vec4Of(col, c);
         pRot(A_ScreenPlacement, (x0 + x1) * 0.5f - len * 0.5f, (y0 + y1) * 0.5f, len, thick, ang, c, s_white);
     }

@@ -11,9 +11,11 @@ namespace esp {
         if (!mode && !scavMode) return;
         int scavengerIndex = pModelIndex("scavenger_item_mp");
         int scavengerMaterial = pFind(0x06, "hud_scavenger_pickup", 0);
+
         ARGB enemy = Pack(CFp(C_ENEMY), 0xFFFF3030);
         ARGB friendly = Pack(CFp(C_FRIENDLY), 0xFF30FF30);
         ARGB iconColor = Pack(CFp(C_LABEL_TEXT), 0xFFFFFFFF);
+
         for (int i = 18; i < 1023; ++i) {
             char* e = base + i * ENT_STRIDE;
             if ((RB(e, E_ALIVE) & 0x40) == 0) continue;
@@ -47,8 +49,11 @@ namespace esp {
                 int table = *(int*)(0x845CA998u + ((u32)entityClass & 0xFFu) * 4u);
                 int def = table ? *(int*)(table + 8) : 0;
                 int icon = def ? *(int*)(def + 0x660) : 0;
+
                 if (icon) {
-                    float w = 28.0f, h = 28.0f;
+                    float w = 28.0f;
+                    float h = 28.0f;
+
                     if (*(short*)(e + E_TYPE) == 3) {
                         w = 60.0f;
                         h = 30.0f;
@@ -75,9 +80,13 @@ namespace esp {
     int LocalPing() {
         void* cg = CG();
         if (!cg) return -1;
+
         __try {
-            u32 a = *(u32*)((char*)cg + 0x84), b = *(u32*)((char*)cg + 0x24084);
+            u32 a = *(u32*)((char*)cg + 0x84);
+            u32 b = *(u32*)((char*)cg + 0x24084);
+
             int p = (int)((a + b) >> 1);
+
             return (p < 0 || p > 999) ? 0 : p;
         } __except (EXCEPTION_EXECUTE_HANDLER) {
             return -1;

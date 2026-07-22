@@ -41,9 +41,13 @@ namespace esp {
                 u32 color;
                 int material;
             } command;
-            Vec2 startScreen, endScreen;
+
+            Vec2 startScreen;
+            Vec2 endScreen;
+
             bool startVisible = W2S(cg, s_tracers[i].start, &startScreen);
             bool endVisible = W2S(cg, s_tracers[i].end, &endScreen);
+
             if (material && (startVisible || endVisible)) {
                 command.start = s_tracers[i].start;
                 command.end = s_tracers[i].end;
@@ -93,25 +97,41 @@ namespace esp {
     void Crosshair(void* cg) {
         int mode = CB(V_CROSSHAIR);
         if (mode == 0 || CB(0x90B4328D) != 0) return;
+
         char* rd = (char*)cg + CG_REFDEF;
-        float W = (float)RI(rd, RD_W), H = (float)RI(rd, RD_H);
-        float cx = W * 0.5f, cy = H * 0.5f;
+
+        float W = (float)RI(rd, RD_W);
+        float H = (float)RI(rd, RD_H);
+        float cx = W * 0.5f;
+        float cy = H * 0.5f;
+
         DrawRect(cx - 10.0f, cy - 1.0f, 19.0f, 1.0f, s_accent);
         DrawRect(cx - 1.0f, cy - 10.0f, 1.0f, 19.0f, s_accent);
     }
 
     void LocalHealthBar(void* cg) {
         static float smooth = 0.0f;
-        int cur = RI(cg, 0x482E8), max = RI(cg, 0x482E0);
+
+        int cur = RI(cg, 0x482E8);
+        int max = RI(cg, 0x482E0);
+
         if (cur <= 0 || max <= 0) return;
+
         int clipped = cur < max ? cur : max;
         int divisor = cur == 0 ? 1 : cur;
         float target = ((float)clipped / (float)divisor) * 300.0f + 2.0f;
+
         smooth += (target - smooth) * 0.2f;
+
         char* rd = (char*)cg + CG_REFDEF;
-        float W = (float)RI(rd, RD_W), H = (float)RI(rd, RD_H);
-        float x = W * 0.5f - 150.0f, y = H - 25.0f;
+
+        float W = (float)RI(rd, RD_W);
+        float H = (float)RI(rd, RD_H);
+        float x = W * 0.5f - 150.0f;
+        float y = H - 25.0f;
+
         ARGB box = Pack(CFp(C_BOX), 0xC0000000);
+
         FramedRect(x, y, 300.0f, 16.0f, 1.0f, box, box);
         FramedRect(x, y, smooth, 16.0f, 1.0f, s_accent, box);
     }

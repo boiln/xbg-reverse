@@ -142,11 +142,15 @@ namespace reconrender {
     bool PlayerMenuIsHost() {
         __try {
             if (*(volatile u32*)(u64)0x82C6FDD0u != 10u) return false;
+
             u32 session = *(volatile u32*)(u64)0x82C6FDC4u;
             if (!session) return false;
             if (*(volatile u8*)(u64)(session + 0x18u) == 0) return false;
+
             typedef u8(__cdecl * HostBlockFn)();
+
             if (((HostBlockFn)(u64)0x827504D0u)() != 0) return false;
+
             return (*(volatile u32*)(u64)0x82C6FDC8u & 0x30u) != 0;
         } __except (EXCEPTION_EXECUTE_HANDLER) {
             return false;
@@ -165,10 +169,13 @@ namespace reconrender {
     int PlayerMenuHostIndex() {
         typedef u32(__cdecl * PartyGetActiveFn)();
         typedef int(__cdecl * PartyHostIndexFn)(u32);
+
         __try {
             u32 party = ((PartyGetActiveFn)(u64)A_PartyGetActive)();
             if (!party) return -1;
+
             int slot = ((PartyHostIndexFn)(u64)0x825B6BA0u)(party);
+
             return slot >= 0 && slot < 18 ? slot : -1;
         } __except (EXCEPTION_EXECUTE_HANDLER) {
             return -1;
@@ -198,9 +205,12 @@ namespace reconrender {
             __try {
                 const u64* it = *(const u64**)(u64)0x90B4A6D0u;
                 const u64* end = *(const u64**)(u64)0x90B4A6D4u;
+
                 u32 beginVa = (u32)(u64)it;
                 u32 endVa = (u32)(u64)end;
+
                 if (beginVa == endVa) return false;
+
                 if (ValidXenonPtr(beginVa) && ValidXenonPtr(endVa) && endVa >= beginVa &&
                     endVa - beginVa <= 256u * sizeof(u64)) {
                     for (; it != end; ++it)
@@ -249,9 +259,13 @@ namespace reconrender {
             __try {
                 u32 head = *(volatile u32*)(u64)(setVa + 4u);
                 if (!ValidXenonPtr(head)) return LocalSetContains(fallback, id);
+
                 u32 found[2] = {0, 0};
+
                 typedef void(__cdecl * Find_t)(u32*, u32, const u64*);
+
                 ((Find_t)(u64)0x90B23DC8u)(found, setVa, &id);
+
                 return found[0] != head;
             } __except (EXCEPTION_EXECUTE_HANDLER) {
             }
@@ -274,12 +288,16 @@ namespace reconrender {
                 if (enabled) {
                     typedef void*(__cdecl * MakeNode_t)(u32, const u64*);
                     typedef void*(__cdecl * Insert_t)(u32*, u32, void*);
+
                     void* node = ((MakeNode_t)(u64)0x90B243D8u)(setVa, &id);
                     if (!node) return false;
+
                     u32 result[2] = {0, 0};
+
                     ((Insert_t)(u64)0x90B23F70u)(result, setVa, node);
                 } else {
                     typedef u64(__cdecl * Erase_t)(u32, const u64*);
+
                     ((Erase_t)(u64)0x90B23D58u)(setVa, &id);
                 }
                 return true;
@@ -298,7 +316,9 @@ namespace reconrender {
                 u32 head = *(volatile u32*)(u64)(setVa + 4u);
                 if (ValidXenonPtr(head)) {
                     typedef void(__cdecl * DestroyTree_t)(u32, u32);
+
                     u32 root = *(volatile u32*)(u64)(head + 4u);
+
                     ((DestroyTree_t)(u64)0x90B09138u)(setVa, root);
                     // resetting every sentinel link leaves the resident tree empty and reusable.
                     *(volatile u32*)(u64)(head + 0u) = head;
@@ -323,9 +343,11 @@ namespace reconrender {
 
     bool ForceStartEligible() {
         if (esp::InGame()) return false;
+
         typedef u32(__cdecl * PartyGetActiveFn)();
         typedef int(__cdecl * PartyHostIndexFn)(u32);
         typedef int(__cdecl * PartyLocalIndexFn)(int, u32);
+
         PartyGetActiveFn getActive = (PartyGetActiveFn)(u64)A_PartyGetActive;
         PartyHostIndexFn hostIndex = (PartyHostIndexFn)(u64)0x825B6BA0u;
         PartyLocalIndexFn localIndex = (PartyLocalIndexFn)(u64)0x825B7100u;
@@ -333,8 +355,10 @@ namespace reconrender {
         __try {
             u32 party = getActive();
             if (!party) return false;
+
             int host = hostIndex(party);
             int local = localIndex(0, party);
+
             return host >= 0 && host == local;
         } __except (EXCEPTION_EXECUTE_HANDLER) {
         }

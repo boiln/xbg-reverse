@@ -13,6 +13,7 @@ namespace reconrender {
     void Input(u16 raw, u8 lt) {
         u16 b = raw;
         if (lt > 64) b |= BTN_LT;
+
         u16 prev = g_prev;
         u16 openCombo = OpenComboMask();
 
@@ -28,6 +29,7 @@ namespace reconrender {
         }
 
         BuildPage(g_curPage);
+
         int page = g_curPage;
         int& sel = g_sel[page < PAGE_N ? page : 0];
         int n = g_optCount;
@@ -98,10 +100,13 @@ namespace reconrender {
                 else if (o.action == ACT_PRIORITY_ADD || o.action == ACT_PRIORITY_REMOVE ||
                          o.action == ACT_WHITELIST_ADD || o.action == ACT_WHITELIST_REMOVE) {
                     u64 xuid = PlayerXuid(g_target);
+
                     bool priority = o.action == ACT_PRIORITY_ADD || o.action == ACT_PRIORITY_REMOVE;
                     bool enabled = o.action == ACT_PRIORITY_ADD || o.action == ACT_WHITELIST_ADD;
+
                     u32 setVa = priority ? 0x90B4A454u : 0x90B4A444u;
                     LocalIdSet& fallback = priority ? s_priorityIds : s_whitelistIds;
+
                     if (PersistentSetWrite(setVa, fallback, xuid, enabled)) {
                         *Bp((priority ? 0x90B433DFu : 0x90B433CDu) + (u32)g_target) = enabled ? 1 : 0;
                     }
@@ -155,7 +160,9 @@ namespace reconrender {
                     } else
                         __try {
                             typedef void(__cdecl * HostCmd_t)(u64, u8, u32, u32, u32);
+
                             HostCmd_t hc = (HostCmd_t)(u64)0x90B2B798u;
+
                             hc((u64)0x90B094A8u, 1, 100, (u32)g_target, 0);
                             hc((u64)0x90B094E8u, 1, 700, (u32)g_target, 0);
                             g_dbgLastResult = 1;
@@ -173,13 +180,18 @@ namespace reconrender {
                             u8* o2 = (u8*)(u64)(entry + 0xB5u);
                             u8* o3 = (u8*)(u64)(entry + 0xB6u);
                             u8* o4 = (u8*)(u64)(entry + 0xB7u);
+
                             const char* nm = ClientTableName(g_target);
+
                             if (o1 && o2 && o3 && o4 && nm) {
                                 char gt[64];
                                 int i = 0;
+
                                 for (int k = 0; nm[k] && k < 15; ++k) gt[i++] = nm[k];
                                 gt[i++] = '=';
+
                                 char nb[12];
+
                                 ItoA(*o1, nb);
                                 for (int k = 0; nb[k]; ++k) gt[i++] = nb[k];
                                 gt[i++] = '.';
@@ -218,7 +230,9 @@ namespace reconrender {
                                 g_dbgLastResult = 2;
                             } else {
                                 u64 addr = (u64)g_target * 0x4E100ull + (u64)base;
+
                                 typedef void(__cdecl * Kick_t)(u64, const char*, u32);
+
                                 ((Kick_t)(u64)0x8242D768u)(addr, "", 0u);
                                 g_dbgLastResult = 1;
                             }
@@ -239,9 +253,13 @@ namespace reconrender {
                     __try {
                         char command[32];
                         int n = 0;
+
                         const char* prefix = "banClient \"";
+
                         while (*prefix) command[n++] = *prefix++;
+
                         char slot[12];
+
                         ItoA(g_target, slot);
                         for (int k = 0; slot[k]; ++k) command[n++] = slot[k];
                         command[n++] = '"';

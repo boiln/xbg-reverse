@@ -63,9 +63,11 @@ namespace reconrender {
                 int hostIdx = PlayerMenuHostIndex();
                 u32 cg = PlayerMenuCg();
                 bool hostMode = PlayerMenuHostMode(cg);
+
                 for (int i = 0; i < 18; ++i) {
                     u64 xuid = PlayerXuid(i);
                     const char* nm = hostMode ? HostSlotName(cg, i) : (xuid ? ClientTableName(i) : 0);
+
                     if (!nm) {
                         addInfo(hostMode ? "No Player" : "No Online Player");
                         continue;
@@ -73,6 +75,7 @@ namespace reconrender {
 
                     char* d = nmbuf[i];
                     int k = 0;
+
                     if (i == hostIdx)
                         for (const char* t = "[^6H^7]"; *t && k < 58;) d[k++] = *t++;
                     if (DetectedModderXuid(xuid))
@@ -97,6 +100,7 @@ namespace reconrender {
                 } else {
                     bool prioritized = PersistentSetContains(0x90B4A454u, s_priorityIds, xuid);
                     bool whitelisted = PersistentSetContains(0x90B4A444u, s_whitelistIds, xuid);
+
                     *Bp(0x90B433DFu + (u32)g_target) = prioritized ? 1 : 0;
                     *Bp(0x90B433CDu + (u32)g_target) = whitelisted ? 1 : 0;
                     addPlainAction(prioritized ? "Remove From Priority List" : "Add To Priority List",
@@ -155,15 +159,10 @@ namespace reconrender {
                 for (int i = 0; i < 11; ++i) addAction(kPresetGt[i], 0x1040 + i);
                 break;
             case PAGE_HOST:
-
                 addToggle("Player God Mode", 0x90B433F1 + g_target);
-
                 addPlainAction("Rename Player", 0x1050);
-
                 addPlainAction("Kick Player", 0x1051);
-
                 addPlainAction("Crash Player", 0x1052);
-
                 addPlainAction("Ban From Session", 0x1053);
                 break;
             case PAGE_COLOURS:
@@ -247,7 +246,6 @@ namespace reconrender {
                 addSlider("Spin Speed Pitch", 0x90B438A8, 0.0f, 40.0f, 1.0f, FMT_1DEC);
                 break;
             case PAGE_ADVANCED:
-
                 addSliderToggle("Position Prediction", 0x90B43BD8, 0x90B43BD4, 0.0f, 10.0f, 0.1f, FMT_1DEC);
                 addSlider("Position Correction", 0x90B43A70, 0.0f, 10.0f, 0.1f, FMT_1DEC);
                 addSliderToggle(*Bp(0x90B43A88) ? "Ping Prediction" : "Prediction Amount", 0x90B43A6C, 0x90B43A88, 0.0f,

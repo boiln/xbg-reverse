@@ -11,7 +11,9 @@ namespace reconrender {
         if (*Bp(0x90B43398u) == 1) {
             *(volatile u32*)(u64)0x82281280u = 0x60000000u;
             GtFlush((void*)(u64)0x82281280u);
+
             typedef void(__cdecl * ToastFn)(int, const char*, const char*, const char*, int);
+
             ((ToastFn)(u64)0x82454800u)(0, "code_warning_fps", "luda v1.0.0", s_notifyStorage, ms);
             return;
         }
@@ -47,6 +49,7 @@ namespace reconrender {
     }
 
     void NotifyPlayer(const char* prefix, const char* name, int ms) { NotifyPlayerFull(prefix, name, 0, ms); }
+
     bool StrHas(const char* h, const char* n) {
         if (!h || !n) return false;
         for (const char* pp = h; *pp; ++pp) {
@@ -69,7 +72,9 @@ namespace reconrender {
         }
 
         typedef const char* (*GetName_t)(int);
+
         GetName_t GetPlayerName = (GetName_t)(u64)0x822628D8u;
+
         const char* found = 0;
         for (int i = 0; i <= 0xAF5 && !found; ++i) {
             const char* nm = GetPlayerName(i);
@@ -91,16 +96,22 @@ namespace reconrender {
     static void RememberDetectedHost() {
         typedef u32(__cdecl * PartyGetActiveFn)();
         typedef int(__cdecl * PartyHostIndexFn)(u32);
+
         PartyGetActiveFn getActive = (PartyGetActiveFn)(u64)A_PartyGetActive;
         PartyHostIndexFn hostIndex = (PartyHostIndexFn)(u64)0x825B6BA0u;
+
         u32 party = getActive();
         if (!party) return;
+
         int host = hostIndex(party);
         if (host < 0 || host >= 18) return;
+
         u64 xuid = PlayerXuid(host);
         if (!xuid) return;
+
         for (int i = 0; i < s_detectedIds.count; ++i)
             if (s_detectedIds.ids[i] == xuid) return;
+
         if (s_detectedIds.count < 18) s_detectedIds.ids[s_detectedIds.count++] = xuid;
     }
 
@@ -120,6 +131,7 @@ namespace reconrender {
 
         if (s_autoDetectDone) return;
         if (s_autoDetectTry >= 6) return;
+
         bool found = DetectMenu_Scan(s_autoDetectTry >= 5);
 
         if (found) {
@@ -133,11 +145,15 @@ namespace reconrender {
 
     static void NotifyDraw() {
         if (!*Bp(0x90B43394u) || !s_detectMsg || GetTickCount() >= s_detectUntil) return;
+
         char buf[96];
         int i = 0;
+
         for (const char* m = s_detectMsg; *m && i < 95; ++m) buf[i++] = *m;
         buf[i] = 0;
+
         if (*Bp(0x90B43398u) != 0) return;
+
         DrawTextS(buf, 60.0f, 60.0f, kColAccent);
     }
 
