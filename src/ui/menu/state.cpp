@@ -19,12 +19,14 @@ namespace reconrender {
     ARGB kColBorder = 0xFFBD89FF;
 
     Vec4 Col(ARGB a) {
-        Vec4 c = {((a >> 16) & 0xFF) / 255.0f, ((a >> 8) & 0xFF) / 255.0f, (a & 0xFF) / 255.0f,
-                  ((a >> 24) & 0xFF) / 255.0f};
+        Vec4 c = {
+            ((a >> 16) & 0xFF) / 255.0f, ((a >> 8) & 0xFF) / 255.0f, (a & 0xFF) / 255.0f,
+            ((a >> 24) & 0xFF) / 255.0f};
 
         return c;
     }
     ARGB PackRGBA(const float* rgba, ARGB fallback) {
+
         if (!rgba) return fallback;
 
         int r = (int)(rgba[0] * 255.0f);
@@ -42,8 +44,10 @@ namespace reconrender {
         if (a > 255) a = 255;
 
         return ((ARGB)a << 24) | ((ARGB)r << 16) | ((ARGB)g << 8) | (ARGB)b;
+
     }
     void UpdatePalette() {
+
         kColAccent = PackRGBA(Fp(VA_COL_MENU), 0xFFBD89FFu);
         kColBorder = kColAccent;
         kColText = PackRGBA(Fp(VA_COL_TEXT), 0xFFFFFFFFu);
@@ -51,6 +55,7 @@ namespace reconrender {
         if (alpha < 0) alpha = 0;
         if (alpha > 255) alpha = 255;
         kColBg = ((ARGB)alpha << 24) | 0x00151515u;
+
     }
 
     int s_font = 0;
@@ -58,6 +63,7 @@ namespace reconrender {
     Layout L;
 
     void ComputeLayout() {
+
         if (!s_font) s_font = pFindAsset(0x15, "fonts/720/normalFont", 0xFFFFFFFF);
         if (!s_white) s_white = pFindAsset(0x06, "white", 0xFFFFFFFF);
 
@@ -81,6 +87,7 @@ namespace reconrender {
         L.menuX = (w - L.menuW) * 0.5f + *Fp(0x90B43A80);
         L.menuY = 90.0f + *Fp(0x90B43A84);
         L.hudMargin = 44.0f;
+
     }
 
     void DrawTextSc(const char* s, float x, float y, float sc, ARGB col) {
@@ -96,6 +103,7 @@ namespace reconrender {
     }
 
     float TextWSc(const char* s, float sc) {
+
         if (!s || !s[0]) return 0.0f;
 
         if (s_font) {
@@ -106,10 +114,12 @@ namespace reconrender {
         while (s[n]) ++n;
 
         return n * (sc * 21.5f);
+
     }
     float TextW(const char* s) { return TextWSc(s, L.scale); }
 
     float VisTextW(const char* s) {
+
         if (!s || !s[0]) return 0.0f;
 
         if (s_font) {
@@ -132,15 +142,18 @@ namespace reconrender {
         }
 
         return u * (L.scale * 21.5f);
+
     }
     float HudW(const char* s) { return VisTextW(s); }
     void DrawRight(const char* s, float rx, float y, ARGB col) { DrawTextS(s, rx - TextW(s), y, col); }
     float TextY(float rowTop, float rowH) { return rowTop + (rowH + L.emPx) * 0.5f; }
     void DrawBorder(float x, float y, float w, float h, float t, ARGB col) {
+
         DrawRect(x, y, w, t, col);
         DrawRect(x, y + h - t, w, t, col);
         DrawRect(x, y, t, h, col);
         DrawRect(x + w - t, y, t, h, col);
+
     }
     const char* kTitle = "luda v1.0.0";
 
@@ -152,118 +165,124 @@ namespace reconrender {
 
     const char* kCrosshair[] = {"OFF", "Plus"};
     const char* kCustomNotif[] = {"Default", "Toast"};
-    const char* kPreset[] = {"HvH (RIOT)",
-                             "Public Rage",
-                             "Public Rage (SPIN)",
-                             "Heaventh's Config (Resets Colours)",
-                             "Cyanokit's Config (Resets Colours)",
-                             "Default Config (Resets Colours)"};
-    const char* kOpenBind[] = {"LT + DPAD-LEFT",  "LT + X",         "LT + R-STICK",
-                               "LT + DPAD-RIGHT", "LT + DPAD-DOWN", "LT + DPAD-UP"};
-    const char* kGtColour[] = {"Black", "Red",  "Green",   "Yellow", "Dark Blue",
-                               "Cyan",  "Pink", "Default", "Grey",   "Brown"};
+    const char* kPreset[] = {
+        "HvH (RIOT)",
+        "Public Rage",
+        "Public Rage (SPIN)",
+        "Heaventh's Config (Resets Colours)",
+        "Cyanokit's Config (Resets Colours)",
+        "Default Config (Resets Colours)"};
+    const char* kOpenBind[] = {
+        "LT + DPAD-LEFT",  "LT + X",         "LT + R-STICK",
+        "LT + DPAD-RIGHT", "LT + DPAD-DOWN", "LT + DPAD-UP"};
+    const char* kGtColour[] = {
+        "Black", "Red",  "Green",   "Yellow", "Dark Blue",
+        "Cyan",  "Pink", "Default", "Grey",   "Brown"};
     const char* kAutoCrouch[] = {"OFF", "Crouch On Damage", "Crouch On Hittable", "Slither Mode"};
     const char* kAntiYaw[] = {"OFF", "Riot", "Face Away", "Spin", "Dynamic", "Random"};
     const char* kAntiPitch[] = {"OFF", "Riot", "Up", "Down", "Up & Down", "Spin", "Dynamic"};
-    const char* kAimTag[] = {"Head End",
-                             "Eyes",
-                             "Head",
-                             "Neck",
-                             "Spine4",
-                             "Stowed Back",
-                             "Upper Spine",
-                             "Main Body",
-                             "Lower Spine",
-                             "Right Shoulder",
-                             "Left Shoulder",
-                             "Left Clavicle",
-                             "Right Clavicle",
-                             "Right Shoulder Twist",
-                             "Left Shoulder Twist",
-                             "Right Shoulder Raise",
-                             "Left Shoulder Raise",
-                             "Right Elbow",
-                             "Left Elbow",
-                             "Right Elbow Bulge",
-                             "Left Elbow Bulge",
-                             "Right Wrist",
-                             "Left Wrist",
-                             "Right Wrist Twist",
-                             "Left Wrist Twist",
-                             "Right Mid",
-                             "Left Mid",
-                             "Lower Back",
-                             "Pelvis",
-                             "Right Hip",
-                             "Left Hip",
-                             "Right Hip Twist",
-                             "Left Hip Twist",
-                             "Right Knee",
-                             "Left Knee",
-                             "Right Knee Bulge",
-                             "Left Knee Bulge",
-                             "Right Ankle",
-                             "Left Ankle",
-                             "Right Toe",
-                             "Left Toe",
-                             "Left Pinky",
-                             "Right Pinky",
-                             "Right Index",
-                             "Left Index",
-                             "Left Middle",
-                             "Right Middle",
-                             "Left Ring",
-                             "Right Ring",
-                             "Left Thumb"};
-    const char* kCamo[] = {"None",
-                           "DEVGRU",
-                           "A-TACS AU",
-                           "ERDL",
-                           "Siberia",
-                           "Choco",
-                           "Blue Tiger",
-                           "Bloodshot",
-                           "Ghostex: Delta 6",
-                           "Kryptek: Typhon",
-                           "Carbon Fiber",
-                           "Cherry Blossom",
-                           "Art Of War",
-                           "Ronin",
-                           "Skulls",
-                           "Gold",
-                           "Diamond",
-                           "Elite Member",
-                           "CE Digital",
-                           "Jungle Warfare",
-                           "UK",
-                           "Benjamins",
-                           "Dia de Muertos",
-                           "Graffiti",
-                           "Kawaii",
-                           "Party Rock",
-                           "Zombies",
-                           "Viper",
-                           "Bacon",
-                           "Ghosts",
-                           "Paladin",
-                           "Cyborg",
-                           "Dragon",
-                           "Comics",
-                           "Aqua",
-                           "Breach",
-                           "Coyote",
-                           "Glam",
-                           "Rogue",
-                           "Pack-a-Punch",
-                           "Dead Man's Hand",
-                           "Beast",
-                           "Octane",
-                           "Weaponized 115",
-                           "Afterlife",
-                           "Advanced Warfare"};
-    const char* kPresetGt[] = {"luda v1.0.0",        "Heaventh",      "My Crow Soft", "Chester",
-                               "xbGuard On TOP!",    "DataArmor VPN", "Superiority",  "Heaventh's Pepsi",
-                               "discord.gg/xbGuard", "Drink Tea",     "Lucifer"};
+    const char* kAimTag[] = {
+        "Head End",
+        "Eyes",
+        "Head",
+        "Neck",
+        "Spine4",
+        "Stowed Back",
+        "Upper Spine",
+        "Main Body",
+        "Lower Spine",
+        "Right Shoulder",
+        "Left Shoulder",
+        "Left Clavicle",
+        "Right Clavicle",
+        "Right Shoulder Twist",
+        "Left Shoulder Twist",
+        "Right Shoulder Raise",
+        "Left Shoulder Raise",
+        "Right Elbow",
+        "Left Elbow",
+        "Right Elbow Bulge",
+        "Left Elbow Bulge",
+        "Right Wrist",
+        "Left Wrist",
+        "Right Wrist Twist",
+        "Left Wrist Twist",
+        "Right Mid",
+        "Left Mid",
+        "Lower Back",
+        "Pelvis",
+        "Right Hip",
+        "Left Hip",
+        "Right Hip Twist",
+        "Left Hip Twist",
+        "Right Knee",
+        "Left Knee",
+        "Right Knee Bulge",
+        "Left Knee Bulge",
+        "Right Ankle",
+        "Left Ankle",
+        "Right Toe",
+        "Left Toe",
+        "Left Pinky",
+        "Right Pinky",
+        "Right Index",
+        "Left Index",
+        "Left Middle",
+        "Right Middle",
+        "Left Ring",
+        "Right Ring",
+        "Left Thumb"};
+    const char* kCamo[] = {
+        "None",
+        "DEVGRU",
+        "A-TACS AU",
+        "ERDL",
+        "Siberia",
+        "Choco",
+        "Blue Tiger",
+        "Bloodshot",
+        "Ghostex: Delta 6",
+        "Kryptek: Typhon",
+        "Carbon Fiber",
+        "Cherry Blossom",
+        "Art Of War",
+        "Ronin",
+        "Skulls",
+        "Gold",
+        "Diamond",
+        "Elite Member",
+        "CE Digital",
+        "Jungle Warfare",
+        "UK",
+        "Benjamins",
+        "Dia de Muertos",
+        "Graffiti",
+        "Kawaii",
+        "Party Rock",
+        "Zombies",
+        "Viper",
+        "Bacon",
+        "Ghosts",
+        "Paladin",
+        "Cyborg",
+        "Dragon",
+        "Comics",
+        "Aqua",
+        "Breach",
+        "Coyote",
+        "Glam",
+        "Rogue",
+        "Pack-a-Punch",
+        "Dead Man's Hand",
+        "Beast",
+        "Octane",
+        "Weaponized 115",
+        "Afterlife",
+        "Advanced Warfare"};
+    const char* kPresetGt[] = {
+        "luda v1.0.0",        "Heaventh",      "My Crow Soft", "Chester",
+        "xbGuard On TOP!",    "DataArmor VPN", "Superiority",  "Heaventh's Pepsi",
+        "discord.gg/xbGuard", "Drink Tea",     "Lucifer"};
 
     Option g_options[kMaxOptions];
     int g_optCount = 0;

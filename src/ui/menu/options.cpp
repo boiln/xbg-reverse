@@ -46,6 +46,7 @@ namespace reconrender {
     }
 
     void buildColorEditor(const char* title, u32 rgba, u32 rainbowVa, u32 enabledVa) {
+
         if (enabledVa) addToggle("Enabled", enabledVa);
         if (rainbowVa) addToggle("Rainbow", rainbowVa);
 
@@ -54,9 +55,11 @@ namespace reconrender {
         addSlider("Blue", rgba + 8, 0.0f, 1.0f, 0.003f, FMT_255);
         addSlider("Alpha", rgba + 12, 0.0f, 1.0f, 0.003f, FMT_255);
         addColor(title, rgba);
+
     }
 
     bool ContainsStr(const char* hay, const char* needle) {
+
         for (const char* h = hay; *h; ++h) {
             const char* a = h;
             const char* b = needle;
@@ -68,8 +71,10 @@ namespace reconrender {
         }
 
         return false;
+
     }
     bool SameStr(const char* a, const char* b) {
+
         if (!a || !b) return false;
 
         while (*a && *b && *a == *b) {
@@ -78,9 +83,11 @@ namespace reconrender {
         }
 
         return *a == *b;
+
     }
 
     static bool IsModderName(const char* n) {
+
         static const char* const kSig[] = {
             "XBOX360LSBEST",
             "^6J^5i^6g^5g^6y",
@@ -106,6 +113,7 @@ namespace reconrender {
             if (ContainsStr(n, kSig[k])) return true;
 
         return false;
+
     }
 
     LocalIdSet s_priorityIds = {{0}, 0};
@@ -113,15 +121,18 @@ namespace reconrender {
     LocalIdSet s_detectedIds = {{0}, 0};
 
     u64 PlayerXuid(int slot) {
+
         if (slot < 0 || slot >= 18) return 0;
         __try {
             return *(volatile u64*)(u64)(A_CLIENT_INFO + (u32)slot * CLIENT_INFO_STRIDE + 0x38u);
         } __except (EXCEPTION_EXECUTE_HANDLER) {
             return 0;
         }
+
     }
 
     const char* ClientTableName(int slot) {
+
         if (slot < 0 || slot >= 18) return 0;
         const char* name = (const char*)(u64)(A_CLIENT_INFO + (u32)slot * CLIENT_INFO_STRIDE + 0x40u);
         __try {
@@ -129,17 +140,21 @@ namespace reconrender {
         } __except (EXCEPTION_EXECUTE_HANDLER) {
             return 0;
         }
+
     }
 
     u32 PlayerMenuCg() {
+
         __try {
             return *(volatile u32*)(u64)A_CG_POINTER;
         } __except (EXCEPTION_EXECUTE_HANDLER) {
             return 0;
         }
+
     }
 
     bool PlayerMenuIsHost() {
+
         __try {
             if (*(volatile u32*)(u64)0x82C6FDD0u != 10u) return false;
 
@@ -155,18 +170,22 @@ namespace reconrender {
         } __except (EXCEPTION_EXECUTE_HANDLER) {
             return false;
         }
+
     }
 
     bool PlayerMenuHostMode(u32 cg) {
+
         if (!PlayerMenuIsHost() || !cg) return false;
         __try {
             return *(volatile u32*)(u64)(cg + 0x4808Cu) != 0;
         } __except (EXCEPTION_EXECUTE_HANDLER) {
             return false;
         }
+
     }
 
     int PlayerMenuHostIndex() {
+
         typedef u32(__cdecl * PartyGetActiveFn)();
         typedef int(__cdecl * PartyHostIndexFn)(u32);
 
@@ -180,9 +199,11 @@ namespace reconrender {
         } __except (EXCEPTION_EXECUTE_HANDLER) {
             return -1;
         }
+
     }
 
     static bool HostSlotOccupied(u32 cg, int slot) {
+
         if (!cg || slot < 0 || slot >= 18) return false;
         __try {
             u32 entry = cg + CG_CLIENTINFO + (u32)slot * CG_CLIENTINFO_STRIDE;
@@ -190,6 +211,7 @@ namespace reconrender {
         } __except (EXCEPTION_EXECUTE_HANDLER) {
             return false;
         }
+
     }
 
     const char* HostSlotName(u32 cg, int slot) {
@@ -201,6 +223,7 @@ namespace reconrender {
     static bool ValidXenonPtr(u32 p) { return p >= 0x80000000u && p < 0xC0000000u; }
 
     bool DetectedModderXuid(u64 xuid) {
+
         if (RealEngineResident()) {
             __try {
                 const u64* it = *(const u64**)(u64)0x90B4A6D0u;
@@ -226,6 +249,7 @@ namespace reconrender {
                 if (s_detectedIds.ids[i] == xuid) return true;
 
         return false;
+
     }
 
     static bool LocalSetContains(const LocalIdSet& set, u64 id) {
@@ -236,6 +260,7 @@ namespace reconrender {
     }
 
     static void LocalSetWrite(LocalIdSet& set, u64 id, bool enabled) {
+
         int at = -1;
         for (int i = 0; i < set.count; ++i)
             if (set.ids[i] == id) {
@@ -250,9 +275,11 @@ namespace reconrender {
         if (at < 0) return;
         for (int i = at; i + 1 < set.count; ++i) set.ids[i] = set.ids[i + 1];
         set.ids[--set.count] = 0;
+
     }
 
     bool PersistentSetContains(u32 setVa, LocalIdSet& fallback, u64 id) {
+
         if (!id) return false;
 
         if (RealEngineResident()) {
@@ -272,9 +299,11 @@ namespace reconrender {
         }
 
         return LocalSetContains(fallback, id);
+
     }
 
     bool PersistentSetWrite(u32 setVa, LocalIdSet& fallback, u64 id, bool enabled) {
+
         if (!id) return false;
 
         if (RealEngineResident()) {
@@ -308,9 +337,11 @@ namespace reconrender {
         LocalSetWrite(fallback, id, enabled);
 
         return true;
+
     }
 
     void PersistentSetClear(u32 setVa, LocalIdSet& fallback) {
+
         if (RealEngineResident()) {
             __try {
                 u32 head = *(volatile u32*)(u64)(setVa + 4u);
@@ -331,17 +362,21 @@ namespace reconrender {
         }
         for (int i = 0; i < 18; ++i) fallback.ids[i] = 0;
         fallback.count = 0;
+
     }
 
     bool EngineClientArrayReady() {
+
         __try {
             return *(volatile u32*)(u64)0x83B50F40u != 0;
         } __except (EXCEPTION_EXECUTE_HANDLER) {
             return false;
         }
+
     }
 
     bool ForceStartEligible() {
+
         if (esp::InGame()) return false;
 
         typedef u32(__cdecl * PartyGetActiveFn)();
@@ -364,5 +399,6 @@ namespace reconrender {
         }
 
         return false;
+
     }
 }

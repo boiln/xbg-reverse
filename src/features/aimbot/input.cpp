@@ -12,6 +12,7 @@ namespace aimbot {
     bool s_slitherHittable = false;
 
     void ApplyInputSynth(unsigned short* btn, unsigned char* rtrig) {
+
         static const unsigned short XB_B = 0x2000;
         static const unsigned short XB_LB = 0x0100;
         static const unsigned short XB_RB = 0x0200;
@@ -44,6 +45,7 @@ namespace aimbot {
                 if (hp >= 0 && hp < 1000) s_prevHealth = hp;
             }
         }
+
     }
 
     static u32 s_reloadTime = 0;
@@ -55,6 +57,7 @@ namespace aimbot {
     typedef void(__cdecl* WeaponActionFn)(int, int, int);
 
     void OnEntityEvent(void* centity, u32 event) {
+
         void* cg = CG();
         char* cs = ClientState();
 
@@ -132,5 +135,6 @@ namespace aimbot {
             s_burstActionActive = false;
             action(0, 0, 0);
         }
+
     }
 }

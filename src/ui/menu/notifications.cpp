@@ -5,6 +5,7 @@ namespace reconrender {
     static u32 s_detectUntil = 0;
     static char s_notifyStorage[128];
     static void DispatchNotification(int ms) {
+
         s_detectMsg = 0;
         if (!*Bp(0x90B43394u)) return;
 
@@ -20,9 +21,11 @@ namespace reconrender {
 
         s_detectMsg = s_notifyStorage;
         s_detectUntil = GetTickCount() + (u32)ms;
+
     }
 
     void NotifyMsg(const char* msg, int ms) {
+
         int i = 0;
 
         if (msg)
@@ -30,9 +33,11 @@ namespace reconrender {
 
         s_notifyStorage[i] = 0;
         DispatchNotification(ms);
+
     }
 
     void NotifyPlayerFull(const char* prefix, const char* name, const char* suffix, int ms) {
+
         int i = 0;
 
         if (prefix)
@@ -46,11 +51,13 @@ namespace reconrender {
 
         s_notifyStorage[i] = 0;
         DispatchNotification(ms);
+
     }
 
     void NotifyPlayer(const char* prefix, const char* name, int ms) { NotifyPlayerFull(prefix, name, 0, ms); }
 
     bool StrHas(const char* h, const char* n) {
+
         if (!h || !n) return false;
         for (const char* pp = h; *pp; ++pp) {
             const char* a = pp;
@@ -63,9 +70,11 @@ namespace reconrender {
         }
 
         return false;
+
     }
 
     bool DetectMenu_Scan(bool showNoMenu) {
+
         if (!(*(void**)(u64)0x82BBAE68u)) {
             NotifyMsg("This must be used while In-Game!", 3000);
             return false;
@@ -89,11 +98,13 @@ namespace reconrender {
         if (showNoMenu) NotifyMsg("No Menu Detected", 3000);
 
         return false;
+
     }
 
     static bool s_autoDetectDone = false;
     static u8 s_autoDetectTry = 0;
     static void RememberDetectedHost() {
+
         typedef u32(__cdecl * PartyGetActiveFn)();
         typedef int(__cdecl * PartyHostIndexFn)(u32);
 
@@ -111,11 +122,12 @@ namespace reconrender {
 
         for (int i = 0; i < s_detectedIds.count; ++i)
             if (s_detectedIds.ids[i] == xuid) return;
-
         if (s_detectedIds.count < 18) s_detectedIds.ids[s_detectedIds.count++] = xuid;
+
     }
 
     static void AutoDetect_Tick() {
+
         bool eligible = esp::InGame() && *Bp(0x90B43BDCu);
         __try {
             if (*(volatile u32*)(u64)0x83B50F40u != 0) eligible = false;
@@ -141,9 +153,11 @@ namespace reconrender {
 
         ++s_autoDetectTry;
         if (s_autoDetectTry >= 6) s_autoDetectDone = true;
+
     }
 
     static void NotifyDraw() {
+
         if (!*Bp(0x90B43394u) || !s_detectMsg || GetTickCount() >= s_detectUntil) return;
 
         char buf[96];
@@ -155,9 +169,11 @@ namespace reconrender {
         if (*Bp(0x90B43398u) != 0) return;
 
         DrawTextS(buf, 60.0f, 60.0f, kColAccent);
+
     }
 
     void Frame() {
+
         ComputeLayout();
         if (!s_font) return;
 
@@ -227,5 +243,6 @@ namespace reconrender {
             NotifyDraw();
         } __except (EXCEPTION_EXECUTE_HANDLER) {
         }
+
     }
 }

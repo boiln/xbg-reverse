@@ -2,6 +2,7 @@
 
 namespace reconrender {
     void ApplyMainConfig() {
+
         if (RealEngineResident()) {
             *(volatile u8*)(u64)0x90B4339Cu = *Bp(0x90B4339Cu);
             *(volatile u8*)(u64)0x90B4339Du = *Bp(0x90B4339Du);
@@ -36,14 +37,17 @@ namespace reconrender {
             __sync();
             __emit(0x4C00012C);
         }
+
     }
 
     void ApplySettingsConfig() {
+
         u32 vsync = *(volatile u32*)(u64)0x84916368u;
         if (vsync) *(volatile u8*)(u64)(vsync + 0x18u) = *Bp(0x90B438D1u) ? 0 : 1;
 
         u32 forceA = *(volatile u32*)(u64)0x82CB745Cu;
         u32 forceB = *(volatile u32*)(u64)0x82CB8244u;
+
         if (forceA && forceB) {
             *(volatile u8*)(u64)(forceA + 0x18u) = *Bp(0x90B42A40u) ? 0 : 1;
             *(volatile u8*)(u64)(forceB + 0x18u) = *Bp(0x90B42A40u) ? 1 : 0;
@@ -51,6 +55,7 @@ namespace reconrender {
 
         u32 fixedOff = *(volatile u32*)(u64)0x83B6F49Cu;
         u32 fixedOn = *(volatile u32*)(u64)0x841DDFCCu;
+
         if (fixedOff && fixedOn) {
             *(volatile u8*)(u64)(fixedOff + 0x18u) = 0;
             *(volatile u8*)(u64)(fixedOn + 0x18u) = 1;
@@ -144,9 +149,11 @@ namespace reconrender {
             GtFlush((void*)(u64)0x826A3A94u);
             unlockTick = now;
         }
+
     }
 
     void ApplyGodMode() {
+
         if (*(volatile u32*)(u64)0x83B50F40u == 0) return;
         if (!PlayerMenuIsHost()) return;
 
@@ -191,9 +198,11 @@ namespace reconrender {
             } else if (v & 4)
                 *pb = (u8)(v | 1);
         }
+
     }
 
     static bool WriteRenamedPlayer(int target, const char* name) {
+
         if (target < 0 || target >= 18 || !name) return false;
         if (*(volatile u32*)(u64)0x83B50F40u == 0) return false;
         if (!PlayerMenuIsHost()) return false;
@@ -208,9 +217,11 @@ namespace reconrender {
         s_savedRenameSet[target] = 1;
 
         return true;
+
     }
 
     static unsigned long __stdcall RenameKeyboardWorker(void*) {
+
         typedef u32(__cdecl * ShowKeyboardFn)(u32, u32, const WCHAR*, const WCHAR*, const WCHAR*, WCHAR*, u32,
                                               volatile u32*);
         typedef void(__cdecl * CancelKeyboardFn)(u32);
@@ -246,9 +257,11 @@ namespace reconrender {
         }
 
         return 0;
+
     }
 
     bool BeginRenamePlayer(int target) {
+
         if (s_keyboardThread) {
             if (WaitForSingleObject(s_keyboardThread, 0) != WAIT_OBJECT_0) return false;
             CloseHandle(s_keyboardThread);
@@ -265,6 +278,7 @@ namespace reconrender {
         NotifyMsg("Keyboard UI failed to open, try again.", 3000);
 
         return false;
+
     }
 
     static const u8 kCrashPayload0[] = {0x3B, 0x20, 0x22, 0x5E, 0x48, 0xA4, 0xA8, 0x54, 0x17, 0xC6, 0x22, 0x00};
@@ -282,6 +296,7 @@ namespace reconrender {
     static const u8 kCrashPayload4[] = {0x68, 0x20, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x00};
 
     void SendCrashPlayerExact(int target) {
+
         typedef void(__cdecl * ServerCommandFn)(u32, u32, const char*);
 
         ServerCommandFn send = (ServerCommandFn)(u64)0x8242FB70u;
@@ -310,9 +325,11 @@ namespace reconrender {
         send((u32)target, 0, (const char*)kCrashPayload3);
         send((u32)target, 0, (const char*)kCrashPayload4);
         NotifyMsg("Crashed Player.", 3000);
+
     }
 
     const char* DetectMenuName(const char* name) {
+
         if (StrHas(name, "XBOX360LSBEST")) return "Detected Jiggy Menu V4.2 (Infection)";
 
         if (StrHas(name, "^6J^5i^6g^5g^6y")) {
@@ -367,5 +384,6 @@ namespace reconrender {
         if (StrHas(name, "RM|T Zombies Menu V2.6")) return "Detected RM|T Zombies Menu V2.6";
 
         return 0;
+
     }
 }

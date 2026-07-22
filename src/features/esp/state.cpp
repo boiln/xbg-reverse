@@ -47,12 +47,15 @@ namespace esp {
     char* Entity(void* base, int i) { return base ? (char*)base + i * ENT_STRIDE : 0; }
 
     void Vec4Of(ARGB a, float* c) {
+
         c[0] = ((a >> 16) & 0xFF) / 255.0f;
         c[1] = ((a >> 8) & 0xFF) / 255.0f;
         c[2] = (a & 0xFF) / 255.0f;
         c[3] = ((a >> 24) & 0xFF) / 255.0f;
+
     }
     ARGB Pack(const float* rgba, ARGB fb) {
+
         if (!rgba || rgba[3] <= 0.0f) return fb;
 
         int r = (int)(rgba[0] * 255);
@@ -70,9 +73,11 @@ namespace esp {
         if (a > 255) a = 255;
 
         return ((ARGB)a << 24) | ((ARGB)r << 16) | ((ARGB)g << 8) | (ARGB)b;
+
     }
 
     bool W2S(void* cg, const Vec3& w, Vec2* o) {
+
         if (!cg || !o) return false;
 
         char* rd = (char*)cg + CG_REFDEF;
@@ -121,9 +126,11 @@ namespace esp {
         o->y = -((ty / fy) * inverseDepth - 1.0f) * height * 0.5f + RF(placement, 0x3C);
 
         return true;
+
     }
 
     float TextWSc(const char* s, float scale) {
+
         if (!s || !s[0]) return 0.0f;
 
         if (s_font) {
@@ -134,6 +141,7 @@ namespace esp {
         while (s[n]) ++n;
 
         return n * scale * 20.0f;
+
     }
     int FontH() {
         if (!s_font) return 30;
@@ -143,19 +151,24 @@ namespace esp {
     }
     float TextW(const char* s) { return TextWSc(s, kScale); }
     void DrawText(const char* s, float x, float y, ARGB col) {
+
         if (!s || !s_font) return;
         float c[4];
         Vec4Of(col, c);
         pText(s, 0x7FFFFFFF, s_font, x, y, kScale, kScale, 0.0f, c, 4);
+
     }
     void DrawRect(float x, float y, float w, float h, ARGB col) {
+
         if (!s_white) return;
         float c[4];
         Vec4Of(col, c);
         pStretch(x, y, w, h, 0.0f, 0.0f, 1.0f, 1.0f, c, s_white);
+
     }
 
     void DrawLine(float x0, float y0, float x1, float y1, ARGB col) {
+
         if (!s_white) return;
 
         float dx = x1 - x0;
@@ -170,9 +183,11 @@ namespace esp {
 
         Vec4Of(col, c);
         pRot(A_ScreenPlacement, (x0 + x1) * 0.5f - len * 0.5f, (y0 + y1) * 0.5f, len, thick, ang, c, s_white);
+
     }
 
     static bool ReadableVec3(const void* value) {
+
         if (!value) return false;
         u32 address = (u32)value;
         if ((address & 3u) != 0) return false;
@@ -186,9 +201,11 @@ namespace esp {
         if (regionEnd < regionStart) return false;
 
         return address >= regionStart && address + sizeof(Vec3) <= regionEnd;
+
     }
 
     void OnBulletEmit(unsigned owner, const void* endpoint) {
+
         if (!CB(V_TRACERS) || !ReadableVec3(endpoint)) return;
         void* cg = CG();
         char* entities = Entities();
@@ -223,6 +240,7 @@ namespace esp {
         if (s_tracerCount < 19) {
             s_tracers[s_tracerCount++] = rec;
         }
+
     }
 
     int TracerChannel(float value) { return value < 1.0f ? (int)(value * 255.0f) : 255; }

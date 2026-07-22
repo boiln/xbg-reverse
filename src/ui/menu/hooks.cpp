@@ -13,12 +13,14 @@ namespace reconrender {
         __emit(0x4C00012C);
     }
     static void PatchJump(u32* at, u32 dest, bool linked) {
+
         at[0] = 0x3C000000u | (dest >> 16);
         at[1] = 0x60000000u | (dest & 0xFFFF);
         at[2] = 0x7C0903A6u;
         at[3] = 0x4E800420u | (linked ? 1u : 0u);
         Sync(at);
         Sync(at + 2);
+
     }
     static u32 BranchTarget(u32 ins, u32* at) {
         u32 o = ins & 0x03FFFFFC;
@@ -41,6 +43,7 @@ namespace reconrender {
         }
 
         bool Install(u32 s, const void* dst) {
+
             if (m_installed || !s || !dst) return false;
 
             if (m_stubIdx < 0) {
@@ -82,9 +85,11 @@ namespace reconrender {
             m_installed = true;
 
             return true;
+
         }
 
         void Remove() {
+
             if (!m_installed) return;
             __try {
                 // removal restores the four instructions saved during installation.
@@ -95,6 +100,7 @@ namespace reconrender {
             } __except (EXCEPTION_EXECUTE_HANDLER) {
             }
             m_installed = false;
+
         }
     };
     static Detour s_paint;
@@ -114,6 +120,7 @@ namespace reconrender {
     static volatile bool s_bootExited = false;
 
     static void ForceUiRgb(u32 destination) {
+
         if (!destination) return;
         float* rgb = Fp(0x90B439B4u);
         for (int i = 0; i < 3; ++i) {
@@ -121,10 +128,12 @@ namespace reconrender {
             if (value < 0) value = 0;
             *(volatile u8*)(u64)(destination + 1u + (u32)i) = (u8)value;
         }
+
     }
 
     typedef void(__cdecl* UiColourFn)(u32, u16, u32, u32, u32, u32);
     static void __cdecl hkUiColour(u32 assetRecord, u16 param2, u32 param3, u32 param4, u32 colour, u32 param6) {
+
         const char* name = 0;
         __try {
             if (assetRecord) name = *(const char**)(u64)assetRecord;
@@ -143,6 +152,7 @@ namespace reconrender {
         }
         UiColourFn original = s_uicolor.Original<UiColourFn>();
         if (original) original(assetRecord, param2, param3, param4, colour, param6);
+
     }
 
     typedef void(__cdecl* SetCamoFn)(u32, u32, float, u32, u32, u32, u32);
@@ -159,6 +169,7 @@ namespace reconrender {
     }
 
     static void ProcessChatCommand(u32 client, char* message) {
+
         if (!message || (!*Bp(0x90B4339Du) && !*Bp(0x90B4339Cu))) return;
 
         u32 base = *(volatile u32*)(u64)0x83B50F40u;
@@ -227,19 +238,23 @@ namespace reconrender {
         if (PlayerXuid((int)sender) && StrHas(lower, xuid)) return;
         NotifyPlayer("Kick All From: ", name, 3000);
         message[0] = 0;
+
     }
 
     typedef void(__cdecl* ChatCommandFn)(u32, char*, void*);
     static void __cdecl hkChatCommand(u32 client, char* message, void* extra) {
+
         __try {
             ProcessChatCommand(client, message);
         } __except (EXCEPTION_EXECUTE_HANDLER) {
         }
         ChatCommandFn orig = s_chatcommand.Original<ChatCommandFn>();
         if (orig) orig(client, message, extra);
+
     }
 
     static const char* ResolveNetSenderName(u32 context) {
+
         if (!context) return "";
 
         typedef u32(__cdecl * PartyGetActiveFn)();
@@ -274,10 +289,12 @@ namespace reconrender {
         }
 
         return "";
+
     }
 
     typedef void(__cdecl* NetValidateFn)(u32, u32);
     static void __cdecl hkNetValidate(u32 context, u32 message) {
+
         bool drop = false;
         bool rme = false;
         __try {
@@ -305,9 +322,11 @@ namespace reconrender {
         }
         NetValidateFn orig = s_netchan.Original<NetValidateFn>();
         if (orig) orig(context, message);
+
     }
 
     static bool ServerCommandAllowed(u32 localClientNum) {
+
         typedef const char*(__cdecl * CmdArgvFn)(int);
         typedef int(__cdecl * AtoiFn)(const char*);
 
@@ -334,10 +353,12 @@ namespace reconrender {
         if (!*Bp(0x90B4339Fu)) return true;
 
         return arg1 < 0xBu;
+
     }
 
     typedef void(__cdecl* ServerCommandFn)(u32);
     static void __cdecl hkServerCommand(u32 localClientNum) {
+
         bool allowed = true;
         __try {
             allowed = ServerCommandAllowed(localClientNum);
@@ -347,19 +368,23 @@ namespace reconrender {
         if (!allowed) return;
         ServerCommandFn orig = s_servercommand.Original<ServerCommandFn>();
         if (orig) orig(localClientNum);
+
     }
 
     typedef void (*PaintFn)(int, int);
     static void __cdecl hkPaint(int r3, int r4) {
+
         PaintFn orig = s_paint.Original<PaintFn>();
         if (orig) orig(r3, r4);
         __try {
             Frame();
         } __except (EXCEPTION_EXECUTE_HANDLER) {
         }
+
     }
     typedef unsigned long(__cdecl* XInputFn)(unsigned long, XINPUT_STATE*);
     static unsigned long __cdecl hkXInput(unsigned long idx, XINPUT_STATE* st) {
+
         XInputFn orig = s_xinput.Original<XInputFn>();
         unsigned long r = orig ? orig(idx, st) : (unsigned long)ERROR_DEVICE_NOT_CONNECTED;
 
@@ -376,10 +401,12 @@ namespace reconrender {
         }
 
         return r;
+
     }
 
     typedef void(__cdecl* SendCmdFn)(int, int, void*);
     static void __cdecl hkSendCmd(int clientNum, int serverTime, void* cmd) {
+
         if (clientNum == 0) {
             __try {
                 aimbot::InjectCmd();
@@ -388,10 +415,12 @@ namespace reconrender {
         }
         SendCmdFn orig = s_clcmd.Original<SendCmdFn>();
         if (orig) orig(clientNum, serverTime, cmd);
+
     }
 
     typedef void(__cdecl* CGPlayerFn)(int, void*);
     static void __cdecl hkCGPlayer(int localClientNum, void* centity) {
+
         CGPlayerFn orig = s_cgplayer.Original<CGPlayerFn>();
         if (orig) orig(localClientNum, centity);
 
@@ -399,34 +428,40 @@ namespace reconrender {
             aimbot::ApplyFakeModel(localClientNum, centity);
         } __except (EXCEPTION_EXECUTE_HANDLER) {
         }
+
     }
 
     typedef void(__cdecl* EntityEventFn)(int, void*, unsigned, void*);
     static void __cdecl hkEntityEvent(int localClientNum, void* centity, unsigned event, void* eventData) {
+
         __try {
             aimbot::OnEntityEvent(centity, event);
         } __except (EXCEPTION_EXECUTE_HANDLER) {
         }
         EntityEventFn orig = s_entityevent.Original<EntityEventFn>();
         if (orig) orig(localClientNum, centity, event, eventData);
+
     }
 
     typedef void(__cdecl* BulletEmitFn)(void*, unsigned, void*, void*, void*, const void*, void*, void*, u32, u32, u32,
                                         u32, u32);
     static void __cdecl hkBulletEmit(void* a1, unsigned owner, void* a3, void* a4, void* a5, const void* endpoint,
                                      void* a7, void* a8, u32 a9, u32 a10, u32 a11, u32 a12, u32 a13) {
+
         __try {
             esp::OnBulletEmit(owner, endpoint);
         } __except (EXCEPTION_EXECUTE_HANDLER) {
         }
         BulletEmitFn orig = s_bulletemit.Original<BulletEmitFn>();
         if (orig) orig(a1, owner, a3, a4, a5, endpoint, a7, a8, a9, a10, a11, a12, a13);
+
     }
 
     typedef int(__cdecl* TagWorldFn)(void*, void*, u32, void*, Vec3*);
     typedef void(__cdecl* GetPlayerEyeFn)(void*, Vec3*, u32);
 
     static int __cdecl hkTagWorld(void* centity, void* dobj, u32 tag, void* axis, Vec3* out) {
+
         TagWorldFn orig = s_tagworld.Original<TagWorldFn>();
         int result = orig ? orig(centity, dobj, tag, axis, out) : 0;
 
@@ -449,6 +484,7 @@ namespace reconrender {
         }
 
         return result;
+
     }
 
     static bool TagWorldTargetIsClean() {
@@ -482,6 +518,7 @@ namespace reconrender {
     }
 
     static bool UiColourTargetIsClean() {
+
         volatile u32* p = (volatile u32*)(u64)0x828BA040u;
         bool stock = p[0] == 0x7D8802A6u && p[1] == 0x4805BF25u && p[2] == 0x9421FF40u && p[3] == 0x7C7F1B78u;
         bool resident = (p[0] & 0xFFFF0000u) == 0x3C000000u && (p[1] & 0xFFFF0000u) == 0x60000000u &&
@@ -489,9 +526,11 @@ namespace reconrender {
                         (p[0] & 0xFFFFu) < 0x9200u;
 
         return stock || resident;
+
     }
 
     static bool SetCamoTargetIsClean() {
+
         volatile u32* p = (volatile u32*)(u64)0x82245B48u;
         bool stock = p[0] == 0x7D8802A6u && p[1] == 0x486D0405u && p[2] == 0xDBA1FF50u && p[3] == 0xDBC1FF58u;
         bool resident = (p[0] & 0xFFFF0000u) == 0x3C000000u && (p[1] & 0xFFFF0000u) == 0x60000000u &&
@@ -499,11 +538,13 @@ namespace reconrender {
                         (p[0] & 0xFFFFu) < 0x9200u;
 
         return stock || resident;
+
     }
 
     static bool TitleUp() { return XamGetCurrentTitleId() == BO2_TITLE_ID; }
 
     static unsigned long __stdcall BootThunk(void*) {
+
         s_bootExited = false;
 
         while (s_running) {
@@ -540,16 +581,20 @@ namespace reconrender {
         s_bootExited = true;
 
         return 0;
+
     }
     void Start() {
+
         if (s_running) return;
         s_running = true;
         s_bootExited = false;
         unsigned long t = 0;
         ExCreateThread(&s_bootThread, 0x20000, &t, (void*)XapiThreadStartup, BootThunk, 0, 0x2);
+
     }
 
     void Stop() {
+
         if (!s_running && !s_bootThread && !s_keyboardThread) return;
         s_running = false;
         s_keyboardStop = true;
@@ -591,5 +636,6 @@ namespace reconrender {
         }
         for (int i = 0; i < 400 && !s_bootExited; ++i) Sleep(5);
         Sleep(40);
+
     }
 }

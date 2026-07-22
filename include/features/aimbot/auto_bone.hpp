@@ -20,6 +20,7 @@ namespace autobone {
     };
 
     static bool VirtualPairForSelector(u8 selector, VirtualPair* pair) {
+
         if (!pair) return false;
 
         switch (selector) {
@@ -71,9 +72,11 @@ namespace autobone {
         }
 
         return false;
+
     }
 
     static bool ResolvePosition(void* context, u8 selector, ResolveDirect resolveDirect, Vec3* position) {
+
         if (!resolveDirect || !position || selector >= 0x3C) return false;
         if (selector < 0x33) return resolveDirect(context, selector, position);
 
@@ -91,6 +94,7 @@ namespace autobone {
         position->z = (first.z - second.z) * scale + second.z;
 
         return true;
+
     }
 
     struct SelectInput {
@@ -112,6 +116,7 @@ namespace autobone {
     };
 
     static bool Try(void* context, TrySelector trySelector, u8 selector, float* bestDamage, SelectResult* result) {
+
         Vec3 position;
         if (!trySelector(context, selector, &position, bestDamage)) return false;
         result->selector = selector;
@@ -119,10 +124,12 @@ namespace autobone {
         result->bestDamage = *bestDamage;
 
         return true;
+
     }
 
     static bool SelectPriority(const SelectInput& input, void* context, TrySelector trySelector, float* bestDamage,
                                SelectResult* result) {
+
         if (Try(context, trySelector, input.configuredSelector, bestDamage, result)) return true;
 
         bool found = false;
@@ -155,10 +162,12 @@ namespace autobone {
         }
 
         return found;
+
     }
 
     static bool Select(const SelectInput& input, SelectState* state, void* context, TrySelector trySelector,
                        float initialBestDamage, SelectResult* result) {
+
         if (!state || !trySelector || !result || input.paused) return false;
 
         float bestDamage = initialBestDamage;
@@ -184,6 +193,7 @@ namespace autobone {
         if (old >= 0x3C) state->rollingSelector = 0;
 
         return Try(context, trySelector, state->rollingSelector, &bestDamage, result);
+
     }
 }
 

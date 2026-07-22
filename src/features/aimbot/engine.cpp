@@ -6,6 +6,7 @@
 
 namespace aimbot {
     static void PatchWord(u32 address, u32 word) {
+
         volatile u32* p = (volatile u32*)address;
         if (*p == word) return;
         DWORD oldProtect = 0;
@@ -16,9 +17,11 @@ namespace aimbot {
         __emit(0x4C00012C);
         DWORD ignored = 0;
         VirtualProtect((void*)p, 4, oldProtect, &ignored);
+
     }
 
     void ApplyAimbotPatches(void* cg) {
+
         const u32 nop = 0x60000000;
         bool recoil = CB(CFG_RECOIL) != 0;
         // enabled paths use bypass words; disabled paths restore stock instructions.
@@ -32,6 +35,7 @@ namespace aimbot {
         }
         PatchWord(0x826C6E6C, CB(CFG_SWAY) ? nop : 0x4BFFE975);
         PatchWord(0x826C7A64, CB(CFG_FLINCH) ? nop : 0x4BFFF95D);
+
     }
 
     float AimFovPixels() { return *(volatile float*)0x83C59ED8 * 2.0f; }
@@ -51,6 +55,7 @@ namespace aimbot {
     }
 
     void ViewRef(float* pitch, float* yaw) {
+
         char* cs = ClientState();
 
         if (cs && (((u32)(u64)cs) >> 28) == 0xB) {
@@ -60,6 +65,7 @@ namespace aimbot {
         }
         *pitch = s_viewPitch;
         *yaw = s_viewYaw;
+
     }
 
     char* Entities() {
@@ -69,6 +75,7 @@ namespace aimbot {
     }
 
     bool WorldToScreen(void* cg, const Vec3& world, Vec2* out) {
+
         if (!cg || !out) return false;
 
         char* rd = (char*)cg + CG_REFDEF;
@@ -93,6 +100,7 @@ namespace aimbot {
         out->y = RI(rd, RD_H) * 0.5f * (1.0f - ty / fy / tz);
 
         return true;
+
     }
 
     TeamCheck_t pTeam = (TeamCheck_t)A_TeamCheck;
@@ -112,6 +120,7 @@ namespace aimbot {
     TagPos_t pTag = (TagPos_t)A_TagPos;
 
     bool TagPos(char* base, int idx, const char* tag, Vec3* out) {
+
         char* e = base + idx * ENT_STRIDE;
         int dobj = pDObj(idx, 0);
 
@@ -120,9 +129,11 @@ namespace aimbot {
         int ti = pSL(tag, 0);
 
         return pTag(e, dobj, ti, out) != 0;
+
     }
 
     void ApplyAimPrediction(void* cg, char* entities, int targetIdx, Vec3* point) {
+
         if (!cg || !entities || !point || targetIdx < 0 || targetIdx >= 18) return;
         char* entity = entities + targetIdx * ENT_STRIDE;
         Vec3 adjusted = *point;
@@ -168,5 +179,6 @@ namespace aimbot {
         }
 
         *point = adjusted;
+
     }
 }

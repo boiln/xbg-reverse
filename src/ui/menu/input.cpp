@@ -11,6 +11,7 @@ namespace reconrender {
     static inline bool Hit(u16 now, u16 prev, u16 bit) { return (now & bit) && !(prev & bit); }
 
     void Input(u16 raw, u8 lt) {
+
         u16 b = raw;
         if (lt > 64) b |= BTN_LT;
 
@@ -313,5 +314,6 @@ namespace reconrender {
                 Adjust(o, -1);
         }
         g_prev = b;
+
     }
 }

@@ -9,6 +9,7 @@ namespace reconrender {
     }
 
     int ParentPage(int p) {
+
         switch (p) {
             case PAGE_RECOVERY:
             case PAGE_GAMERTAG:
@@ -47,9 +48,11 @@ namespace reconrender {
             default:
                 return PAGE_MAIN;
         }
+
     }
 
     void ItoA(int v, char* b) {
+
         char t[16];
         int i = 0;
         bool neg = v < 0;
@@ -64,9 +67,11 @@ namespace reconrender {
         if (neg) b[j++] = '-';
         while (i) b[j++] = t[--i];
         b[j] = 0;
+
     }
 
     void UtoA(u32 v, char* b) {
+
         char t[16];
         int i = 0;
 
@@ -77,9 +82,11 @@ namespace reconrender {
         int j = 0;
         while (i) b[j++] = t[--i];
         b[j] = 0;
+
     }
 
     void U64ToHex(u64 v, char* b) {
+
         static const char kHex[] = "0123456789abcdef";
         char t[17];
         int i = 0;
@@ -91,9 +98,11 @@ namespace reconrender {
         int j = 0;
         while (i) b[j++] = t[--i];
         b[j] = 0;
+
     }
 
     void Adjust(Option& o, int dir) {
+
         if (o.kind == K_SLIDER || o.kind == K_SLIDER_TOGGLE) {
             if (!o.backFloat) return;
 
@@ -122,9 +131,11 @@ namespace reconrender {
             if (v >= o.names_n) v = 0;
             *o.backByte = (u8)v;
         }
+
     }
 
     static void FmtSlider(const Option& o, char* buf) {
+
         if (!buf) return;
 
         if (!o.backFloat) {
@@ -188,16 +199,20 @@ namespace reconrender {
             *b++ = ']';
         }
         *b = 0;
+
     }
     static const char* EnumName(const Option& o) {
+
         int v = o.backByte ? (int)*o.backByte : 0;
         if (v < 0) v = 0;
         if (v >= o.names_n) v = o.names_n - 1;
 
         return (o.names_n > 0) ? o.names[v] : "";
+
     }
 
     static void FmtEnum(const Option& o, char* buf) {
+
         const char* n = EnumName(o);
         char* b = buf;
         *b++ = '<';
@@ -206,9 +221,11 @@ namespace reconrender {
         *b++ = ' ';
         *b++ = '>';
         *b = 0;
+
     }
 
     void RenderMenu() {
+
         BuildPage(g_curPage);
 
         float avail = L.scrH - L.menuY - L.titleH - L.tabH - L.barH - 12.0f;
@@ -346,6 +363,7 @@ namespace reconrender {
         }
 
         DrawRect(x, tabTop + L.tabH, L.menuW, L.barH, kColAccent);
+
     }
 
     static const char* GLYPH_OPEN_HINT = "^BXENONButtontrigL^ + ^BXENONButtondpadL^ To Open/Close luda v1.0.0";
@@ -355,6 +373,7 @@ namespace reconrender {
     static u32 s_fps = 0;
 
     void TickFps() {
+
         u32 now = GetTickCount();
         s_fpsCount++;
 
@@ -367,11 +386,13 @@ namespace reconrender {
         s_fps = s_fpsCount * 1000u / elapsed;
         s_fpsCount = 0;
         s_fpsLast = now;
+
     }
 
     static u32 s_worldFrameCg = 0;
     static u32 s_worldFrameSequence = 0;
     bool BeginWorldFrame() {
+
         __try {
             u32 cg = *(volatile u32*)(u64)A_CG_POINTER;
             if (!cg) {
@@ -390,8 +411,10 @@ namespace reconrender {
 
             return true;
         }
+
     }
     static void BuildKV(char* buffer, const char* prefix, int value) {
+
         int i = 0;
 
         while (prefix[i]) {
@@ -399,9 +422,11 @@ namespace reconrender {
             ++i;
         }
         ItoA(value, buffer + i);
+
     }
 
     void WatermarkHUD() {
+
         if (*Bp(0x90B433A8)) {
             float hpad = 8.0f;
             float hw = HudW(GLYPH_OPEN_HINT) + hpad * 2;
@@ -437,9 +462,11 @@ namespace reconrender {
             DrawBorder(x, y, width, height, L.border, kColBorder);
             DrawTextS(lines[i], x + padding, TextY(y, height), kColText);
         }
+
     }
 
     void DrawLegend() {
+
         const char* legend;
 
         if (TopTabIndex(g_curPage) < 0)
@@ -454,13 +481,16 @@ namespace reconrender {
         float ly = L.scrH - 52.0f;
 
         DrawTextS(legend, lx, TextY(ly, L.rowH), kColText);
+
     }
 
     void SetRGBA(u32 va, float r, float g, float b, float a) {
+
         float* f = Fp(va);
         f[0] = r;
         f[1] = g;
         f[2] = b;
         f[3] = a;
+
     }
 }

@@ -16,6 +16,7 @@ namespace xbg {
     volatile unsigned int g_hookMask = 0xFFFFFFFF;
 
     void ArenaInit() {
+
         if (g_arena) return;
 
         g_arena = (unsigned char*)VirtualAlloc(0, 0x110000, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
@@ -30,9 +31,11 @@ namespace xbg {
             memcpy(g_arena + off, g_xbgDumpChunks[i], len);
             off += len;
         }
+
     }
 
     void ArenaFree() {
+
         if (g_tramp) {
             VirtualFree(g_tramp, 0, MEM_RELEASE);
             g_tramp = 0;
@@ -42,5 +45,6 @@ namespace xbg {
             VirtualFree(g_arena, 0, MEM_RELEASE);
             g_arena = 0;
         }
+
     }
 }

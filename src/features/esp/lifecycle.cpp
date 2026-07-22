@@ -17,6 +17,7 @@ namespace esp {
     }
 
     void Render() {
+
         void* cg = CG();
 
         if (!cg) {
@@ -110,5 +111,6 @@ namespace esp {
             DrawPlayer(base, cg, i, ent, col, localOrg);
             if (CB(V_POINTERS) && CB(0x90B4328D) == 0) DrawPointer(cg, ent, col);
         }
+
     }
 }

@@ -6,6 +6,7 @@
 
 namespace aimbot {
     void Frame() {
+
         for (int stateIdx = 0; stateIdx < 18; ++stateIdx) {
             s_espHittable[stateIdx] = 0;
             s_espVisible[stateIdx] = 0;
@@ -230,5 +231,6 @@ namespace aimbot {
         s_targetVisible = fovPass;
         bool doSteer = s_hasTarget && mode == 1;
         if (doSteer) SteerView(cg, s_aimPitch, s_aimYaw);
+
     }
 }

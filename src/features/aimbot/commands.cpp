@@ -6,15 +6,18 @@
 
 namespace aimbot {
     static float WriteAxis(float fake, float view, int* slot) {
+
         float f = fake - view;
         if (f > 180.0f) f -= 360.0f;
         if (f < -180.0f) f += 360.0f;
         *slot = (int)(f * DEG2SHORT) & 0xFFFF;
 
         return fake;
+
     }
 
     static void SpreadRandom(u32 serverTime, float* x, float* y) {
+
         u32 seed = serverTime;
         pSeedScramble(&seed);
         float angle = pRandomFloat(&seed) * 360.0f * 0.01745329238474369f;
@@ -22,9 +25,11 @@ namespace aimbot {
         float magnitude = pRandomFloat(&seed);
         *x = cosf(angle) * magnitude;
         *y = sinf(angle) * magnitude;
+
     }
 
     static bool CurrentSpread(void* cg, float* spread) {
+
         if (!cg || !spread) return false;
 
         void* ps = (char*)cg + 0x480A8;
@@ -42,9 +47,11 @@ namespace aimbot {
         *spread = (maximum - minimum) * RF(cg, 0x24618) * 0.003921568859368563f + minimum;
 
         return true;
+
     }
 
     static void ApplyNoSpread(void* cg, char* previous, char* oldSlot, char* newSlot, int mode) {
+
         if (!CB(CFG_SPREAD) || !cg || !previous || !oldSlot || !newSlot) return;
 
         float spread = 0.0f;
@@ -87,9 +94,10 @@ namespace aimbot {
 
         float spreadRadians = spread * 0.01745329238474369f;
         float cone = (sinf(spreadRadians) / cosf(spreadRadians)) * 8192.0f;
-        Vec3 shot = {forward[0] * 8192.0f + right[0] * (randomX * cone) + up[0] * (randomY * cone),
-                     forward[1] * 8192.0f + right[1] * (randomX * cone) + up[1] * (randomY * cone),
-                     forward[2] * 8192.0f + right[2] * (randomX * cone) + up[2] * (randomY * cone)};
+        Vec3 shot = {
+            forward[0] * 8192.0f + right[0] * (randomX * cone) + up[0] * (randomY * cone),
+            forward[1] * 8192.0f + right[1] * (randomX * cone) + up[1] * (randomY * cone),
+            forward[2] * 8192.0f + right[2] * (randomX * cone) + up[2] * (randomY * cone)};
 
         float shotYaw = atan2f(shot.y, shot.x) * RAD2DEG;
         float shotPitch = -atan2f(shot.z, sqrtf(shot.x * shot.x + shot.y * shot.y)) * RAD2DEG;
@@ -101,9 +109,11 @@ namespace aimbot {
         *(u32*)(oldSlot + U_YAW) += yawCorrection;
         *(u32*)(previous + U_PITCH) += pitchCorrection;
         *(u32*)(previous + U_YAW) += yawCorrection;
+
     }
 
     static void AntiAim(void* cmd, bool writeCmd) {
+
         s_aaActive = false;
         if (!CB(AA_ENABLE)) return;
 
@@ -201,9 +211,11 @@ namespace aimbot {
         s_aaActive = true;
         s_cmdIn = (int)vYaw;
         s_myAim = (int)fYaw;
+
     }
 
     void ApplyFakeModel(int localClientNum, void* entity) {
+
         if (localClientNum != 0 || !entity) return;
 
         if (!CB(AA_ENABLE)) {
@@ -239,9 +251,11 @@ namespace aimbot {
             }
         } __except (EXCEPTION_EXECUTE_HANDLER) {
         }
+
     }
 
     void InjectCmd() {
+
         s_call++;
 
         void* cg = CG();
@@ -357,5 +371,6 @@ namespace aimbot {
 
         if (aaActive) AntiAim(newSlot, true);
         s_path = 6;
+
     }
 }

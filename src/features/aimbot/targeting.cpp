@@ -6,6 +6,7 @@
 
 namespace aimbot {
     bool DirectBulletTrace(void* cg, char* entities, int localIdx, int targetIdx, const Vec3& start, const Vec3& end) {
+
         if (!cg || !entities || localIdx < 0 || targetIdx < 0) return false;
         unsigned char fire[0x40];
         unsigned char trace[0x80];
@@ -36,58 +37,60 @@ namespace aimbot {
         if (*(float*)(trace + 0x10) < 0.97f) return false;
 
         return *(unsigned short*)(trace + 0x20) == (unsigned short)targetIdx;
+
     }
-    static const char* const kBoneNames[] = {"j_head_end",
-                                             "tag_eye",
-                                             "j_head",
-                                             "j_neck",
-                                             "j_spine4",
-                                             "tag_stowed_back",
-                                             "j_spineupper",
-                                             "j_mainroot",
-                                             "j_spinelower",
-                                             "j_shoulder_ri",
-                                             "j_shoulder_le",
-                                             "j_clavicle_le",
-                                             "j_clavicle_ri",
-                                             "j_shouldertwist_ri",
-                                             "j_shouldertwist_le",
-                                             "j_shoulderraise_ri",
-                                             "j_shoulderraise_le",
-                                             "j_elbow_ri",
-                                             "j_elbow_le",
-                                             "j_elbow_bulge_ri",
-                                             "j_elbow_bulge_le",
-                                             "j_wrist_ri",
-                                             "j_wrist_le",
-                                             "j_wristtwist_ri",
-                                             "j_wristtwist_le",
-                                             "j_mid_ri_1",
-                                             "j_mid_le_1",
-                                             "back_low",
-                                             "pelvis",
-                                             "j_hip_ri",
-                                             "j_hip_le",
-                                             "j_hiptwist_ri",
-                                             "j_hiptwist_le",
-                                             "j_knee_ri",
-                                             "j_knee_le",
-                                             "j_knee_bulge_ri",
-                                             "j_knee_bulge_le",
-                                             "j_ankle_ri",
-                                             "j_ankle_le",
-                                             "j_ball_ri",
-                                             "j_ball_le",
-                                             "j_pinky_le_3",
-                                             "j_pinky_ri_3",
-                                             "j_index_ri_3",
-                                             "j_index_le_3",
-                                             "j_mid_le_3",
-                                             "j_mid_ri_3",
-                                             "j_ring_le_3",
-                                             "j_ring_ri_3",
-                                             "j_thumb_le_3",
-                                             "j_thumb_ri_3"};
+    static const char* const kBoneNames[] = {
+        "j_head_end",
+        "tag_eye",
+        "j_head",
+        "j_neck",
+        "j_spine4",
+        "tag_stowed_back",
+        "j_spineupper",
+        "j_mainroot",
+        "j_spinelower",
+        "j_shoulder_ri",
+        "j_shoulder_le",
+        "j_clavicle_le",
+        "j_clavicle_ri",
+        "j_shouldertwist_ri",
+        "j_shouldertwist_le",
+        "j_shoulderraise_ri",
+        "j_shoulderraise_le",
+        "j_elbow_ri",
+        "j_elbow_le",
+        "j_elbow_bulge_ri",
+        "j_elbow_bulge_le",
+        "j_wrist_ri",
+        "j_wrist_le",
+        "j_wristtwist_ri",
+        "j_wristtwist_le",
+        "j_mid_ri_1",
+        "j_mid_le_1",
+        "back_low",
+        "pelvis",
+        "j_hip_ri",
+        "j_hip_le",
+        "j_hiptwist_ri",
+        "j_hiptwist_le",
+        "j_knee_ri",
+        "j_knee_le",
+        "j_knee_bulge_ri",
+        "j_knee_bulge_le",
+        "j_ankle_ri",
+        "j_ankle_le",
+        "j_ball_ri",
+        "j_ball_le",
+        "j_pinky_le_3",
+        "j_pinky_ri_3",
+        "j_index_ri_3",
+        "j_index_le_3",
+        "j_mid_le_3",
+        "j_mid_ri_3",
+        "j_ring_le_3",
+        "j_ring_ri_3",
+        "j_thumb_le_3",
+        "j_thumb_ri_3"};
     const int kBoneCount = (int)(sizeof(kBoneNames) / sizeof(kBoneNames[0]));
 
     volatile int s_autoInput = 0;
@@ -96,6 +99,7 @@ namespace aimbot {
     autobone::SelectState s_boneSelectState[18];
 
     bool ResolveDirectBone(void* raw, u8 selector, autobone::Vec3* position) {
+
         BoneEvalContext* context = (BoneEvalContext*)raw;
         if (!context || !position || selector >= (u8)kBoneCount) return false;
         Vec3 point;
@@ -113,9 +117,11 @@ namespace aimbot {
         position->z = point.z;
 
         return true;
+
     }
 
     bool TryBoneSelector(void* raw, u8 selector, autobone::Vec3* position, float* bestDamage) {
+
         BoneEvalContext* context = (BoneEvalContext*)raw;
         if (!context || !position || !bestDamage) return false;
         autobone::Vec3 point;
@@ -144,6 +150,7 @@ namespace aimbot {
         *position = point;
 
         return true;
+
     }
 
     float NormDeg(float a) {
@@ -155,6 +162,7 @@ namespace aimbot {
     int ANGLE2SHORT(float d) { return (int)(d * DEG2SHORT) & 0xFFFF; }
 
     void AngleVectors(float pitch, float yaw, float roll, float* fwd, float* right, float* up) {
+
         const float D = 0.017453292519943295f;
 
         float sp = sinf(pitch * D);
@@ -181,9 +189,11 @@ namespace aimbot {
             up[1] = cr * sp * sy - sr * cy;
             up[2] = cr * cp;
         }
+
     }
 
     void SteerView(void* cg, float pitch, float yaw) {
+
         if (!cg) return;
         float* ang = (float*)((char*)cg + CG_VIEWANG);
         ang[0] = pitch;
@@ -191,6 +201,7 @@ namespace aimbot {
         ang[2] = 0.0f;
         AngleVectors(pitch, yaw, 0.0f, (float*)((char*)cg + CG_AXIS_FWD), (float*)((char*)cg + CG_AXIS_RIGHT),
                      (float*)((char*)cg + CG_AXIS_UP));
+
     }
 
     volatile bool s_hasTarget = false;

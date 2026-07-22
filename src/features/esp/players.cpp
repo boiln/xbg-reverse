@@ -6,14 +6,17 @@
 
 namespace esp {
     bool TagPos(void* base, int idx, const char* tag, Vec3* out) {
+
         char* e = Entity(base, idx);
         int dobj = pDObj(idx, 0);
         if (!e || !dobj) return false;
         int ti = pSL(tag, 0);
 
         return pTag(e, dobj, ti, out) != 0;
+
     }
     static const char* WeaponName(void* base, int idx) {
+
         char* e = Entity(base, idx);
         if (!e) return "";
         int w = RI(e, E_WEAPIDX) & 0xFF;
@@ -24,6 +27,7 @@ namespace esp {
         const char* n = key ? pLocalizeString(key) : 0;
 
         return n && n[0] ? n : "";
+
     }
 
     struct BonePair {
@@ -41,6 +45,7 @@ namespace esp {
     static bool IsZero(const Vec3& v) { return v.x == 0.0f && v.y == 0.0f && v.z == 0.0f; }
 
     static void DrawBone(void* base, void* cg, int idx, const char* ca, const char* cb, ARGB col) {
+
         Vec3 a;
         Vec3 b;
         Vec2 sa;
@@ -51,6 +56,7 @@ namespace esp {
         if (!W2S(cg, a, &sa) || !W2S(cg, b, &sb)) return;
 
         DrawLine(sa.x, sa.y, sb.x, sb.y, col);
+
     }
 
     struct Box {
@@ -62,6 +68,7 @@ namespace esp {
         bool ok;
     };
     static Vec3 HeadTop(void* base, int idx, char* ent) {
+
         Vec3 h = {0.0f, 0.0f, 0.0f};
 
         if (TagPos(base, idx, "j_head", &h) && !IsZero(h)) {
@@ -73,8 +80,10 @@ namespace esp {
         h.z = 10.0f;
 
         return h;
+
     }
     static Box PlayerBox(void* base, void* cg, int idx, char* ent) {
+
         Box b;
         b.ok = false;
         b.distance = 0.0f;
@@ -116,15 +125,19 @@ namespace esp {
         b.ok = true;
 
         return b;
+
     }
     static void Box2D(const Box& b, ARGB c) {
+
         float pad = b.distance * 0.0005f;
         DrawRect(b.l, b.top, (b.r - b.l) + pad, 2.0f, c);
         DrawRect(b.l, b.bot, (b.r - b.l) + pad, 2.0f, c);
         DrawRect(b.l, b.top, 2.0f, (b.bot - b.top) + pad, c);
         DrawRect(b.r, b.top, 2.0f, (b.bot - b.top) + pad, c);
+
     }
     static void BoxCorner(const Box& b, ARGB c) {
+
         float extent = (b.bot - b.top) + b.distance * 0.001f;
         float quarter = extent * 0.25f;
         float arm = extent * 0.16666667f;
@@ -142,9 +155,11 @@ namespace esp {
         DrawRect(right, b.top, 2.0f, vertical, c);
         DrawRect(left, bottomVertical, 2.0f, vertical, c);
         DrawRect(right, bottomVertical, 2.0f, vertical, c);
+
     }
 
     static Vec3 RotatePointExact(const Vec3& point, const Vec3& origin, const Vec3& angles) {
+
         const float degreesToRadians = 0.01745329252f;
         float dx = point.x - origin.x;
         float dy = point.y - origin.y;
@@ -162,17 +177,21 @@ namespace esp {
         Vec3 out = {tx * cy - ty * sy + origin.x, ty * cy + tx * sy + origin.y, tz2 + origin.z};
 
         return out;
+
     }
 
     static bool EntityAlivePredicate(char* ent) {
+
         if (((u32)RI(ent, E_FLAGS) & 0x20u) != 0) return false;
         u32 stateBits = ((u32)RI(ent, 0) + 0xE0u) & 0x1400u;
 
         if ((RB(ent, E_ALIVE) & 0x40u) != 0 && ((u32)RI(ent, 0x1D4) & 0x40000u) == 0 && stateBits != 0) return true;
 
         return stateBits == 0;
+
     }
     void Box3D(void* base, void* cg, int idx, char* ent, ARGB col) {
+
         Vec3 o = RV3(ent, E_ORIGIN);
         Vec3 mins;
         Vec3 maxs;
@@ -215,9 +234,10 @@ namespace esp {
         maxs.x += o.x;
         maxs.y += o.y;
         maxs.z += o.z;
-        Vec3 world[8] = {{mins.x, mins.y, mins.z}, {maxs.x, mins.y, mins.z}, {maxs.x, maxs.y, mins.z},
-                         {mins.x, maxs.y, mins.z}, {mins.x, mins.y, maxs.z}, {maxs.x, mins.y, maxs.z},
-                         {maxs.x, maxs.y, maxs.z}, {mins.x, maxs.y, maxs.z}};
+        Vec3 world[8] = {
+            {mins.x, mins.y, mins.z}, {maxs.x, mins.y, mins.z}, {maxs.x, maxs.y, mins.z},
+            {mins.x, maxs.y, mins.z}, {mins.x, mins.y, maxs.z}, {maxs.x, mins.y, maxs.z},
+            {maxs.x, maxs.y, maxs.z}, {mins.x, maxs.y, maxs.z}};
 
         Vec3 ang = RV3(ent, E_ANGLES);
         Vec3 cc[8];
@@ -228,9 +248,9 @@ namespace esp {
 
         for (int i = 0; i < 8; ++i)
             if (!W2S(cg, cc[i], &s[i])) return;
-
-        static const int E[12][2] = {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6},
-                                     {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}};
+        static const int E[12][2] = {
+            {0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6},
+            {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}};
 
         for (int i = 0; i < 12; ++i) {
             int a = E[i][0];
@@ -238,8 +258,10 @@ namespace esp {
 
             DrawLine(s[a].x, s[a].y, s[d].x, s[d].y, col);
         }
+
     }
     static void DrawSnap(void* cg, const Vec2& target, ARGB c) {
+
         char* rd = (char*)cg + CG_REFDEF;
 
         float W = (float)RI(rd, RD_W);
@@ -253,9 +275,11 @@ namespace esp {
             if (!W2S(cg, third, &source)) return;
         }
         DrawLine(target.x, target.y, source.x, source.y, c);
+
     }
 
     static void DrawFilledPointerTriangle(float tipX, float tipY, float dirX, float dirY, ARGB col) {
+
         const int slices = 14;
         const float length = 14.0f;
         const float halfBase = 8.0f;
@@ -270,8 +294,10 @@ namespace esp {
                      centerY + perpY * halfWidth, col);
         }
         DrawRect(tipX - 1.0f, tipY - 1.0f, 2.0f, 2.0f, col);
+
     }
     void DrawPointer(void* cg, char* ent, ARGB col) {
+
         char* rd = (char*)cg + CG_REFDEF;
 
         float W = (float)RI(rd, RD_W);
@@ -325,8 +351,10 @@ namespace esp {
         if (fabsf(dirY) > 0.001f) edgeY = (centerY - margin) / fabsf(dirY);
         float edgeDistance = edgeX < edgeY ? edgeX : edgeY;
         DrawFilledPointerTriangle(centerX + dirX * edgeDistance, centerY + dirY * edgeDistance, dirX, dirY, col);
+
     }
     static const char* FmtDist(const Vec3& e, const Vec3& l, char* buf) {
+
         Vec3 d = {e.x - l.x, e.y - l.y, e.z - l.z};
         float m = sqrtf(d.x * d.x + d.y * d.y + d.z * d.z) * 1.20319998f;
 
@@ -359,9 +387,11 @@ namespace esp {
         buf[j] = 0;
 
         return buf;
+
     }
 
     void DrawPlayer(void* base, void* cg, int idx, char* ent, ARGB col, const Vec3& localOrg) {
+
         Box b = PlayerBox(base, cg, idx, ent);
         Vec3 o = RV3(ent, E_ORIGIN);
         Vec3 feetPoint = o;
@@ -407,9 +437,11 @@ namespace esp {
             const char* nm = (char*)cg + CG_CLIENTINFO + idx * CI_STRIDE + CI_NAME;
             if (nm[0]) BoxedLabel(baseX, sh.y - 24.0f, nm, col);
         }
+
     }
 
     void ConstantRadar(bool on) {
+
         // toggling uses a nop and restores the stock conditional branch.
         u32* p = (u32*)0x821B8FD4ull;
 
@@ -428,5 +460,6 @@ namespace esp {
         __emit(0x4C00012C);
         VirtualProtect(p, 4, old, &old);
         s_radarState = want;
+
     }
 }

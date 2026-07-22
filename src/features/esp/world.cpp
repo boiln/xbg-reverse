@@ -6,6 +6,7 @@
 
 namespace esp {
     void DrawWorldItems(void* cg, char* base) {
+
         int mode = CB(V_ENTITIES);
         int scavMode = CB(V_SCAVENGER);
         if (!mode && !scavMode) return;
@@ -75,9 +76,11 @@ namespace esp {
             }
             if ((mode == 2 || mode == 3) && (*(short*)(e + E_TYPE) != 3 || !teammate)) Box3D(base, cg, i, e, col);
         }
+
     }
 
     int LocalPing() {
+
         void* cg = CG();
         if (!cg) return -1;
 
@@ -91,28 +94,34 @@ namespace esp {
         } __except (EXCEPTION_EXECUTE_HANDLER) {
             return -1;
         }
+
     }
 
     const char* PlayerName(int idx) {
+
         void* cg = CG();
         if (!cg || idx < 0 || idx >= 18) return 0;
         const char* n = (const char*)cg + CG_CLIENTINFO + idx * CI_STRIDE + CI_NAME;
 
         return n[0] ? n : 0;
+
     }
     bool InGame() { return CG() != 0; }
 
     void SyncSessionMode() { *reconrender::CfgByte(0x90B4328E) = pIsZombieSession() ? 1 : 0; }
 
     int LocalClientIdx() {
+
         void* cg = CG();
         if (!cg) return -1;
         int i = *(int*)((char*)cg + CG_CLIENTNUM);
 
         return (i >= 0 && i < 18) ? i : -1;
+
     }
 
     bool PlayerEligible(void* cg, char* base, int idx) {
+
         if (!cg || !base || idx < 0) return false;
         void** cgsPointer = (void**)(u64)A_CGS_Pointer;
         void* cgs = cgsPointer ? *cgsPointer : 0;
@@ -128,9 +137,11 @@ namespace esp {
         if (*(char*)((char*)cg + 0x69B1F + idx * CI_STRIDE) != 0) return false;
 
         return idx == (int)*(signed char*)(ent + 0x2C3);
+
     }
 
     bool ZombieEntityEligible(char* ent, int idx) {
+
         if (!ent || idx < 0 || idx > 0x400) return false;
         if (*(short*)(ent + E_TYPE) != 0x10) return false;
         u32 flags = (u32)RI(ent, 0x1D4);
@@ -143,6 +154,7 @@ namespace esp {
         if (flags == 0 || RI(ent, 0xE0) == 0) return false;
 
         return (state & 0x40000000u) != 0;
+
     }
 
     bool ZombieEntityIsEnemy(char* ent) {

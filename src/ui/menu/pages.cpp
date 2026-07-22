@@ -2,6 +2,7 @@
 
 namespace reconrender {
     void BuildPage(int page) {
+
         g_optCount = 0;
 
         switch (page) {
@@ -268,6 +269,7 @@ namespace reconrender {
         int& sel = g_sel[page < PAGE_N ? page : 0];
         if (sel >= g_optCount) sel = g_optCount ? g_optCount - 1 : 0;
         if (sel < 0) sel = 0;
+
     }
 
     const int kTopTabs[5] = {PAGE_MAIN, PAGE_AIMBOT, PAGE_VISUAL, PAGE_PLAYER, PAGE_SETTINGS};
