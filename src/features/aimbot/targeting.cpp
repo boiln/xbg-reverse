@@ -90,16 +90,6 @@ namespace aimbot {
                                              "j_thumb_ri_3"};
     const int kBoneCount = (int)(sizeof(kBoneNames) / sizeof(kBoneNames[0]));
 
-    volatile int s_awAttempts = 0;
-    volatile int s_awSuccess = 0;
-    volatile int s_awStage = 0;
-    volatile int s_awThickness100 = 0;
-    volatile int s_awDepth100 = 0;
-    volatile int s_awBudget100 = 0;
-    volatile int s_awReason = 0;
-    volatile int s_awEdgeBits = 0;
-    volatile int s_awFireHit = 0;
-    volatile int s_awForwardHit = 0;
     volatile int s_autoInput = 0;
     volatile int s_autoCmd = 0;
 
@@ -143,30 +133,10 @@ namespace aimbot {
         autowall::Result wall;
         const float eye[3] = {context->eye.x, context->eye.y, context->eye.z};
         const float end[3] = {point.x, point.y, point.z};
-        ++s_awAttempts;
 
         if (!autowall::Evaluate(context->cg, context->entities, context->localIdx, context->targetIdx, eye, end,
-                                CB(MODE_SPECTATOR) != 0, &wall)) {
-            // failed traces still publish their terminal state for the profiler.
-            s_awStage = wall.stage;
-            s_awThickness100 = (int)(wall.lastThickness * 100.0f);
-            s_awDepth100 = (int)(wall.lastDepth * 100.0f);
-            s_awBudget100 = (int)(wall.lastBudget * 100.0f);
-            s_awReason = wall.reason;
-            s_awEdgeBits = wall.edgeBits;
-            s_awFireHit = (int)wall.fireHitId;
-            s_awForwardHit = (int)wall.forwardHitId;
+                                CB(MODE_SPECTATOR) != 0, &wall))
             return false;
-        }
-        ++s_awSuccess;
-        s_awStage = wall.stage;
-        s_awThickness100 = (int)(wall.lastThickness * 100.0f);
-        s_awDepth100 = (int)(wall.lastDepth * 100.0f);
-        s_awBudget100 = (int)(wall.lastBudget * 100.0f);
-        s_awReason = wall.reason;
-        s_awEdgeBits = wall.edgeBits;
-        s_awFireHit = (int)wall.fireHitId;
-        s_awForwardHit = (int)wall.forwardHitId;
         // a selector only wins when it improves the current damage score.
         if (wall.score <= *bestDamage) return false;
         *bestDamage = wall.score;
@@ -254,16 +224,6 @@ namespace aimbot {
     int DbgPath() { return s_path; }
     int DbgPathMode() { return s_pathMode; }
     int DbgPathHasTarget() { return s_pathHasTarget; }
-    int DbgAwAttempts() { return s_awAttempts; }
-    int DbgAwSuccess() { return s_awSuccess; }
-    int DbgAwStage() { return s_awStage; }
-    int DbgAwThickness100() { return s_awThickness100; }
-    int DbgAwDepth100() { return s_awDepth100; }
-    int DbgAwBudget100() { return s_awBudget100; }
-    int DbgAwReason() { return s_awReason; }
-    int DbgAwEdgeBits() { return s_awEdgeBits; }
-    int DbgAwFireHit() { return s_awFireHit; }
-    int DbgAwForwardHit() { return s_awForwardHit; }
     int DbgAutoInput() { return s_autoInput; }
     int DbgAutoCmd() { return s_autoCmd; }
     int DbgAimLock() { return s_hasTarget ? 1 : 0; }

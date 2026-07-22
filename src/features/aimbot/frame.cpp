@@ -13,16 +13,6 @@ namespace aimbot {
         s_reach = 0;
         s_hasTarget = false;
         s_aaHasTarget = false;
-        s_awAttempts = 0;
-        s_awSuccess = 0;
-        s_awStage = 0;
-        s_awThickness100 = 0;
-        s_awDepth100 = 0;
-        s_awBudget100 = 0;
-        s_awReason = 0;
-        s_awEdgeBits = 0;
-        s_awFireHit = 0;
-        s_awForwardHit = 0;
         int mode = CB(CFG_TYPE);
         bool aimOn = mode != 0;
         bool aaOn = CB(AA_ENABLE) != 0 && (CB(AA_YAW) != 0 || CB(AA_PITCH) != 0);

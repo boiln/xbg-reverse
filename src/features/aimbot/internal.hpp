@@ -168,16 +168,6 @@ namespace aimbot {
     extern volatile float s_viewPitch;
     extern const int kBoneCount;
     extern autobone::SelectState s_boneSelectState[18];
-    extern volatile int s_awAttempts;
-    extern volatile int s_awSuccess;
-    extern volatile int s_awStage;
-    extern volatile int s_awThickness100;
-    extern volatile int s_awDepth100;
-    extern volatile int s_awBudget100;
-    extern volatile int s_awReason;
-    extern volatile int s_awEdgeBits;
-    extern volatile int s_awFireHit;
-    extern volatile int s_awForwardHit;
     extern volatile int s_autoInput;
     extern volatile int s_autoCmd;
     extern volatile bool s_hasTarget;

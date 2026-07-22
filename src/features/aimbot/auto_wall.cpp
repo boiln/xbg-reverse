@@ -1,4 +1,3 @@
-#include "luda/diagnostics/logger.hpp"
 #include "luda/features/aimbot/auto_wall.hpp"
 
 #include <math.h>
@@ -48,8 +47,6 @@ namespace autowall {
 
         return (bits & 0x7F800000u) != 0x7F800000u;
     }
-
-    static u32 Bits(float f) { return *(u32*)&f; }
 
     static bool InitFireParams(FireParams* fp, void* cg, const float eye[3], const float end[3]) {
         // fire parameters require normalized direction and mirrored start fields.
@@ -129,15 +126,9 @@ namespace autowall {
         F32(&retry, 0x3C) = dz / len;
 
         Clear(&retryTrace, sizeof(retryTrace));
-        
         const int retryHit = traceFn(0, &retry, targetEnt, &retryTrace, 0, 0);
-        
-                      U16(&retryTrace, 0x28));
         if (!retryHit) return false;
-        
-        const int retryAdvance = continueFn(&retry, &retryTrace, 1.0f);
-        
-                      Bits(F32(&retry, 0x08)));
+        continueFn(&retry, &retryTrace, 1.0f);
 
         if (RejectedTraceType(&retryTrace, spectatorMode)) return false;
         if ((int)U32(&retry, 0x04) != target) return false;
@@ -170,26 +161,11 @@ namespace autowall {
 
     bool Evaluate(void* cg, void* entities, int localClient, int targetClient, const float eye[3],
                   const float targetPoint[3], bool spectatorMode, Result* result) {
-        // clearing first keeps failure diagnostics deterministic.
         if (result) {
-            result->hit = false;
             result->direct = false;
-            result->budget = 0.0f;
             result->score = 0.0f;
-            result->walls = 0;
-            result->stage = 0;
-            result->lastThickness = 0.0f;
-            result->lastDepth = 0.0f;
-            result->lastBudget = 0.0f;
-            result->reason = 0;
-            result->edgeBits = 0;
-            result->fireHitId = 0;
-            result->forwardHitId = 0;
-            result->traceType = 0;
-            result->reverseType = 0;
         }
         if (!cg || !entities || !eye || !targetPoint || !result) return false;
-        result->stage = 1;
 
         if (localClient < 0 || localClient >= 18 || targetClient < 0 || targetClient >= 18) return false;
 
@@ -198,7 +174,6 @@ namespace autowall {
         const u32 weapon = U32(localEnt, 0x1B0);
         const u32 viewWeapon = U32(cg, 0x48260);
         if (!weapon || !viewWeapon) return false;
-        result->stage = 2;
 
         WeaponDefFn weaponDefFn = (WeaponDefFn)kWeaponDef;
         PenetrationDepthFn depthFn = (PenetrationDepthFn)kPenetrationDepth;
@@ -221,7 +196,6 @@ namespace autowall {
 
         const float multiplier = (float)multiplierFn(weapon, mulA, mulB);
         if (!Finite(multiplier) || multiplier <= 0.0f) return false;
-        result->stage = 3;
 
         FireParams fp;
         TraceResult tr;
@@ -229,69 +203,43 @@ namespace autowall {
         Clear(&tr, sizeof(tr));
 
         const int initialTrace = traceFn(0, &fp, targetEnt, &tr, 0, 0);
-        result->stage = 4;
-
         if (!initialTrace) return false;
-        result->stage = 5;
 
         if (RejectedTraceType(&tr, spectatorMode)) {
-            result->stage = 6;
             if (!RetraceType14(cg, targetEnt, targetClient, &fp, &tr, spectatorMode)) return false;
 
             const float returnedBudget = F32(&fp, 0x08);
             const float score = returnedBudget * multiplier;
             if (!Finite(score) || score <= 0.07f) return false;
-            result->hit = true;
             result->direct = F32(&tr, 0x10) >= 1.0f && returnedBudget >= 0.98f;
-            result->budget = returnedBudget;
             result->score = score;
-            result->stage = 202;
             return true;
         }
 
-        int wallsWalked = 0;
         for (int wall = 0; wall < 6; ++wall) {
-            result->stage = 100 + wall * 10;
             float depth = depthFn(weaponDef, U32(&tr, 0x54));
             if (U32(&tr, 0x14) & 4) depth = 100.0f;
             depth *= adsScale;
             if (!Finite(depth) || depth <= 0.0f) {
-                result->reason = 10 + wall;
-
                 break;
             }
 
             float initialHit[3] = {F32(&tr, 0x44), F32(&tr, 0x48), F32(&tr, 0x4C)};
             TraceHitIdFn hitIdFn = (TraceHitIdFn)kTraceHitId;
             const u32 forwardId = hitIdFn(&tr);
-            result->forwardHitId = forwardId;
-
             const int advanced = continueFn(&fp, &tr, 0.135f);
-            result->stage = 102 + wall * 10;
 
             if (!advanced) {
-                result->reason = 20 + wall;
-
                 break;
             }
             if (RejectedTraceType(&tr, spectatorMode)) {
-                result->reason = 30 + wall;
-                result->traceType = U16(&tr, 0x28);
-
                 U32(&fp, 0x04) = 0xFFFFFFFFu;
                 break;
             }
 
             const u32 surface = U32(&tr, 0x54);
-            
             const bool forwardTrace = traceFn(0, &fp, targetEnt, &tr, surface, 0) != 0;
-            result->stage = 103 + wall * 10;
-            
-                          U32(&tr, 0x14));
             if (RejectedTraceType(&tr, spectatorMode)) {
-                result->reason = 40 + wall;
-                result->traceType = U16(&tr, 0x28);
-
                 U32(&fp, 0x04) = 0xFFFFFFFFu;
                 break;
             }
@@ -303,53 +251,30 @@ namespace autowall {
             FireParams reverse;
             TraceResult reverseTrace;
             BuildReverse(&fp, &tr, initialHit, &reverse, &reverseTrace);
-            
-                          Bits(F32(&reverse, 0x08)));
             if (forwardTrace) {
-                
-                const int reverseAdvanced = continueFn(&reverse, &reverseTrace, 0.01f);
-                
-                              Bits(F32(&reverse, 0x08)));
+                continueFn(&reverse, &reverseTrace, 0.01f);
             }
             if (RejectedTraceType(&reverseTrace, spectatorMode)) {
-                result->reason = 50 + wall;
-                result->reverseType = U16(&reverseTrace, 0x28);
-
                 U32(&fp, 0x04) = 0xFFFFFFFFu;
                 break;
             }
             const u32 reverseSurface = U32(&reverseTrace, 0x54);
-            
             const bool reverseHit = traceFn(0, &reverse, targetEnt, &reverseTrace, reverseSurface, 0) != 0;
-            result->stage = 106 + wall * 10;
-            
-                          U32(&reverseTrace, 0x14));
             if (RejectedTraceType(&tr, spectatorMode)) {
-                result->reason = 60 + wall;
-                result->traceType = U16(&tr, 0x28);
-
                 U32(&fp, 0x04) = 0xFFFFFFFFu;
                 break;
             }
 
             const bool solidOverlap = (reverseHit && *((u8*)&reverseTrace + 0x2A) != 0) ||
                                       (*((u8*)&tr + 0x2B) != 0 && *((u8*)&reverseTrace + 0x2B) != 0);
-            result->edgeBits = (forwardTrace ? 1 : 0) | (reverseHit ? 2 : 0) | (solidOverlap ? 4 : 0);
-            result->fireHitId = U32(&fp, 0x04);
-            result->traceType = U16(&tr, 0x28);
-            result->reverseType = U16(&reverseTrace, 0x28);
-
             if ((int)U32(&reverse, 0x04) == targetClient) {
                 U32(&fp, 0x04) = (u32)targetClient;
             }
 
             if (!reverseHit && !solidOverlap) {
                 if (!forwardTrace) {
-                    result->reason = 70 + wall;
-
                     break;
                 }
-                ++wallsWalked;
                 continue;
             }
 
@@ -357,8 +282,6 @@ namespace autowall {
                 float reverseDepth = depthFn(weaponDef, U32(&reverseTrace, 0x54));
                 reverseDepth *= adsScale;
                 if (!Finite(reverseDepth) || reverseDepth <= 0.0f) {
-                    result->reason = 80 + wall;
-
                     break;
                 }
                 if (reverseDepth < depth) depth = reverseDepth;
@@ -378,39 +301,20 @@ namespace autowall {
             if (!Finite(thickness) || thickness < 0.0f) return false;
             if (thickness < 1.0f) thickness = 1.0f;
             F32(&fp, 0x08) -= thickness / depth;
-            result->stage = 108 + wall * 10;
-            result->lastThickness = thickness;
-            result->lastDepth = depth;
-            result->lastBudget = F32(&fp, 0x08);
-            
             if (!Finite(F32(&fp, 0x08)) || F32(&fp, 0x08) <= 0.0f) {
-                result->reason = 90 + wall;
-
                 break;
             }
-            ++wallsWalked;
         }
-        result->stage = 200;
-        result->fireHitId = U32(&fp, 0x04);
-
         if ((int)U32(&fp, 0x04) != targetClient || F32(&fp, 0x08) <= 0.0f) {
-            result->reason = 200;
             return false;
         }
         const float score = F32(&fp, 0x08) * multiplier;
-        result->stage = 201;
 
         if (!Finite(score) || score <= 0.07f) {
-            result->reason = 201;
             return false;
         }
-        result->hit = true;
         result->direct = false;
-        result->budget = F32(&fp, 0x08);
         result->score = score;
-        result->walls = wallsWalked;
-        result->stage = 202;
-
         return true;
     }
 }
