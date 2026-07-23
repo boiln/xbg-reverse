@@ -21,27 +21,27 @@ namespace esp {
         float x, y, z;
     };
 
-    static const u32 A_CG_Pointer = 0x82BBAE68;
-    static const u32 A_CGS_Pointer = 0x82BBAE44;
+    static const u32 A_CG_Pointer      = 0x82BBAE68;
+    static const u32 A_CGS_Pointer     = 0x82BBAE44;
     static const u32 A_EntitiesPointer = 0x82BBC554;
     static const u32 A_ScreenPlacement = 0x82CBC168;
-    static const u32 A_FindAsset = 0x822CAE50;
-    static const u32 A_DrawText = 0x828B8BA0;
-    static const u32 A_TextWidth = 0x828B6FD8;
-    static const u32 A_StretchPic = 0x828B86C0;
-    static const u32 A_RotPic = 0x821C7F58;
-    static const u32 A_ClientDObj = 0x82414578;
-    static const u32 A_TagPos = 0x821D03F0;
-    static const u32 A_TeamCheck = 0x821CD948;
-    static const u32 A_SLGetString = 0x82533528;
-    static const u32 A_WeaponDef = 0x826BF988;
-    static const u32 A_WeaponDef2 = 0x826BF970;
-    static const u32 A_GetNumWeapons = 0x826BF960;
-    static const u32 A_LocalizeString = 0x82442F68;
-    static const u32 A_ModelIndex = 0x826C06E8;
-    static const u32 A_CalcMuzzle = 0x822546F8;
-    static const u32 A_DObjBounds = 0x824CBFE0;
-    static const u32 A_DrawTracer3D = 0x822F1E30;
+    static const u32 A_FindAsset       = 0x822CAE50;
+    static const u32 A_DrawText        = 0x828B8BA0;
+    static const u32 A_TextWidth       = 0x828B6FD8;
+    static const u32 A_StretchPic      = 0x828B86C0;
+    static const u32 A_RotPic          = 0x821C7F58;
+    static const u32 A_ClientDObj      = 0x82414578;
+    static const u32 A_TagPos          = 0x821D03F0;
+    static const u32 A_TeamCheck       = 0x821CD948;
+    static const u32 A_SLGetString     = 0x82533528;
+    static const u32 A_WeaponDef       = 0x826BF988;
+    static const u32 A_WeaponDef2      = 0x826BF970;
+    static const u32 A_GetNumWeapons   = 0x826BF960;
+    static const u32 A_LocalizeString  = 0x82442F68;
+    static const u32 A_ModelIndex      = 0x826C06E8;
+    static const u32 A_CalcMuzzle      = 0x822546F8;
+    static const u32 A_DObjBounds      = 0x824CBFE0;
+    static const u32 A_DrawTracer3D    = 0x822F1E30;
     static const u32 A_IsZombieSession = 0x82406578;
 
     static const int ENT_STRIDE = 0x374;
@@ -51,26 +51,28 @@ namespace esp {
     static const u32 RD_W = 0x00, RD_H = 0x04, RD_FOV = 0x1C, RD_ORG = 0x30, RD_AXIS = 0x40;
 
     static const u32 E_ORIGIN = 0x2C, E_AIMING = 0x155, E_ANGLES = 0x38, E_WEAPIDX = 0x1B0, E_TYPE = 0x2A8,
-                     E_WEAPNUM = 0x2B7, E_ALIVE = 0x36C, E_FLAGS = 0x154;
+    E_WEAPNUM = 0x2B7, E_ALIVE = 0x36C, E_FLAGS = 0x154;
 
-    typedef int (*FindAsset_t)(unsigned, const char*, int);
-    typedef void (*DrawText_t)(const char*, int, int, float, float, float, float, float, const void*, int);
-    typedef void (*Stretch_t)(float, float, float, float, float, float, float, float, const void*, int);
-    typedef void (*RotPic_t)(int, float, float, float, float, float, const void*, int);
-    typedef int (*ClientDObj_t)(int, int);
-    typedef short (*SLGet_t)(const char*, int);
-    typedef int (*TagPos_t)(void*, int, int, Vec3*);
-    typedef void* (*WeaponDef_t)(int);
-    typedef int (*GetNumWeapons_t)(void);
-    typedef const char* (*LocalizeString_t)(const char*);
-    typedef int (*ModelIndex_t)(const char*);
-    typedef int (*CalcMuzzle_t)(int, void*, u32, void*, int, int, int, void*, Vec3*, void*, void*, void*, void*, void*,
-                                void*);
-    typedef void (*DObjBounds_t)(void*, Vec3*, Vec3*);
-    typedef void (*DrawTracer3D_t)(const void*);
-    typedef char (*SessionPredicate_t)(void);
-    typedef int (*TextWidth_t)(int, const char*, int, int);
-    typedef char (*TeamCheck_t)(int, void*);
+    typedef int(* FindAsset_t)(unsigned, const char*, int);
+    typedef void(* DrawText_t)(const char*, int, int, float, float, float, float, float,
+        const void*, int);
+    typedef void(* Stretch_t)(float, float, float, float, float, float, float, float, const void*,
+        int);
+    typedef void(* RotPic_t)(int, float, float, float, float, float, const void*, int);
+    typedef int(* ClientDObj_t)(int, int);
+    typedef short(* SLGet_t)(const char*, int);
+    typedef int(* TagPos_t)(void*, int, int, Vec3*);
+    typedef void*(* WeaponDef_t)(int);
+    typedef int(* GetNumWeapons_t)(void);
+    typedef const char*(* LocalizeString_t)(const char*);
+    typedef int(* ModelIndex_t)(const char*);
+    typedef int(* CalcMuzzle_t)(int, void*, u32, void*, int, int, int, void*, Vec3*, void*, void*,
+        void*, void*, void*, void*);
+    typedef void(* DObjBounds_t)(void*, Vec3*, Vec3*);
+    typedef void(* DrawTracer3D_t)(const void*);
+    typedef char(* SessionPredicate_t)(void);
+    typedef int(* TextWidth_t)(int, const char*, int, int);
+    typedef char(* TeamCheck_t)(int, void*);
 
     enum {
         V_RADAR = 0x90B433AA,
@@ -139,7 +141,7 @@ namespace esp {
     inline int RI(void* p, u32 o) { return *(int*)((char*)p + o); }
     inline u8 RB(void* p, u32 o) { return *(u8*)((char*)p + o); }
     inline Vec3 RV3(void* p, u32 o) {
-        Vec3 v = {RF(p, o), RF(p, o + 4), RF(p, o + 8)};
+        Vec3 v = { RF(p, o), RF(p, o + 4), RF(p, o + 8) };
 
         return v;
     }
@@ -166,7 +168,8 @@ namespace esp {
     void DisableNativeCrosshair(int enabled);
     void Box3D(void* base, void* cg, int index, char* entity, ARGB color);
     void DrawPointer(void* cg, char* entity, ARGB color);
-    void DrawPlayer(void* base, void* cg, int index, char* entity, ARGB color, const Vec3& localOrigin);
+    void DrawPlayer(void* base, void* cg, int index, char* entity, ARGB color,
+        const Vec3& localOrigin);
     void ConstantRadar(bool enabled);
     void DrawWorldItems(void* cg, char* base);
     bool ZombieEntityEligible(char* entity, int index);

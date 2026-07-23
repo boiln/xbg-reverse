@@ -80,35 +80,35 @@ namespace aimbot {
 
     static const u32 E_CLIENTNUM = 0x1D0, E_TYPE2 = 0x2A8, E_MODELPITCH_INV = 0x224, E_MODELPITCH = 0x90;
     static const u32 CFG_THIRDPERSON = 0x90B433A1;
-    static const u32 CI_FAKEPITCH = 0x4C4;
-    static const float AA_PITCH_REF = 20.0f;
-    static const u32 CFG_WHITELIST = 0x90B433CD;
-    static const u32 CFG_PRIORITY = 0x90B433DF;
+    static const u32 CI_FAKEPITCH    = 0x4C4;
+    static const float AA_PITCH_REF  = 20.0f;
+    static const u32 CFG_WHITELIST   = 0x90B433CD;
+    static const u32 CFG_PRIORITY    = 0x90B433DF;
 
-    static const u32 AA_ENABLE = 0x90B43895;
-    static const u32 AA_YAW = 0x90B438A0;
-    static const u32 AA_PITCH = 0x90B438A4;
-    static const u32 AA_SPINYAW = 0x90B438AC;
-    static const u32 AA_SPINPIT = 0x90B438A8;
+    static const u32 AA_ENABLE      = 0x90B43895;
+    static const u32 AA_YAW         = 0x90B438A0;
+    static const u32 AA_PITCH       = 0x90B438A4;
+    static const u32 AA_SPINYAW     = 0x90B438AC;
+    static const u32 AA_SPINPIT     = 0x90B438A8;
     static const u32 MODE_SPECTATOR = 0x90B4328E;
 
-    static const float AA_UP = -70.0f;
-    static const float AA_DOWN = 70.0f;
+    static const float AA_UP     = -70.0f;
+    static const float AA_DOWN   = 70.0f;
     static const float AA_TRACKP = -40.0f;
-    static const float AA_PSPIN = 8.0f;
-    static const float AA_YDYN = 36.0f;
-    static const float AA_CLAMP = 70.0f;
-    static const u32 CG_A2A = 0x482A4;
+    static const float AA_PSPIN  = 8.0f;
+    static const float AA_YDYN   = 36.0f;
+    static const float AA_CLAMP  = 70.0f;
+    static const u32 CG_A2A      = 0x482A4;
 
-    static const float DEG2SHORT = 182.044449f;
+    static const float DEG2SHORT   = 182.044449f;
     static const float PITCH_CLAMP = 89.0f;
-    static const u32 CFG_FOV = 0x90B433A4;
-    static const float RAD2DEG = 57.2957795f;
+    static const u32 CFG_FOV       = 0x90B433A4;
+    static const float RAD2DEG     = 57.2957795f;
 
-    static const u32 CFG_LEAN = 0x90B438B4;
+    static const u32 CFG_LEAN      = 0x90B438B4;
     static const u32 CFG_AUTOBURST = 0x90B438C0;
-    static const u32 CFG_RAPID = 0x90B438B9;
-    static const u32 AC_CROUCH = 0x90B43898;
+    static const u32 CFG_RAPID     = 0x90B438B9;
+    static const u32 AC_CROUCH     = 0x90B43898;
 
     inline u8 CB(u32 va) { return *reconrender::CfgByte(va); }
     inline float CF(u32 va) { return *(float*)reconrender::CfgByte(va); }
@@ -116,25 +116,25 @@ namespace aimbot {
     inline int RI(void* p, u32 o) { return *(int*)((char*)p + o); }
     inline u8 RB(void* p, u32 o) { return *(u8*)((char*)p + o); }
     inline Vec3 RV3(void* p, u32 o) {
-        Vec3 v = {RF(p, o), RF(p, o + 4), RF(p, o + 8)};
+        Vec3 v = { RF(p, o), RF(p, o + 4), RF(p, o + 8) };
 
         return v;
     }
 
-    typedef char (*TeamCheck_t)(int, void*);
-    typedef void* (*WeaponDef_t)(int);
-    typedef int (*GetViewmodelWeapon_t)(void*);
-    typedef void (*GetSpreadForWeapon_t)(void*, u32, float*, float*);
-    typedef void (*SeedFn_t)(u32*);
-    typedef float (*RandomFloat_t)(u32*);
-    typedef int (*BulletTrace_t)(int, void*, void*, void*, u32, u32);
-    typedef char (*WeaponPredicate_t)(u32);
-    typedef char (*SessionPredicate_t)();
-    typedef void (*GetPlayerViewOrigin_t)(int, void*, Vec3*);
-    typedef void (*CalcEntityLerpPositions_t)(void*, void*, int);
-    typedef int (*ClientDObj_t)(int, int);
-    typedef short (*SLGet_t)(const char*, int);
-    typedef int (*TagPos_t)(void*, int, int, Vec3*);
+    typedef char(* TeamCheck_t)(int, void*);
+    typedef void*(* WeaponDef_t)(int);
+    typedef int(* GetViewmodelWeapon_t)(void*);
+    typedef void(* GetSpreadForWeapon_t)(void*, u32, float*, float*);
+    typedef void(* SeedFn_t)(u32*);
+    typedef float(* RandomFloat_t)(u32*);
+    typedef int(* BulletTrace_t)(int, void*, void*, void*, u32, u32);
+    typedef char(* WeaponPredicate_t)(u32);
+    typedef char(* SessionPredicate_t)();
+    typedef void(* GetPlayerViewOrigin_t)(int, void*, Vec3*);
+    typedef void(* CalcEntityLerpPositions_t)(void*, void*, int);
+    typedef int(* ClientDObj_t)(int, int);
+    typedef short(* SLGet_t)(const char*, int);
+    typedef int(* TagPos_t)(void*, int, int, Vec3*);
 
     extern TeamCheck_t pTeam;
     extern WeaponDef_t pWeaponDef;
@@ -210,8 +210,8 @@ namespace aimbot {
     bool WorldToScreen(void* cg, const Vec3& world, Vec2* out);
     bool TagPos(char* base, int index, const char* tag, Vec3* out);
     void ApplyAimPrediction(void* cg, char* entities, int targetIndex, Vec3* point);
-    bool DirectBulletTrace(void* cg, char* entities, int localIndex, int targetIndex, const Vec3& start,
-                           const Vec3& end);
+    bool DirectBulletTrace(void* cg, char* entities, int localIndex, int targetIndex,
+        const Vec3& start, const Vec3& end);
     bool ResolveDirectBone(void* context, u8 selector, autobone::Vec3* position);
     bool TryBoneSelector(void* context, u8 selector, autobone::Vec3* position, float* bestDamage);
     float NormDeg(float angle);

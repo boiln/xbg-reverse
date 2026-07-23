@@ -24,13 +24,13 @@ namespace esp {
     DrawTracer3D_t pDrawTracer3D = (DrawTracer3D_t)A_DrawTracer3D;
     SessionPredicate_t pIsZombieSession = (SessionPredicate_t)A_IsZombieSession;
 
-    int s_font = 0;
-    int s_white = 0;
+    int s_font       = 0;
+    int s_white      = 0;
     int s_radarState = -1;
     int s_crossState = -1;
-    bool s_radarOwn = false;
-    bool s_crossOwn = false;
-    ARGB s_accent = 0xFFBD89FF;
+    bool s_radarOwn  = false;
+    bool s_crossOwn  = false;
+    ARGB s_accent    = 0xFFBD89FF;
     TracerRecord s_tracers[19];
     int s_tracerCount = 0;
 
@@ -63,13 +63,13 @@ namespace esp {
         int b = (int)(rgba[2] * 255);
         int a = (int)(rgba[3] * 255);
 
-        if (r < 0) r = 0;
+        if (r < 0) r   = 0;
         if (r > 255) r = 255;
-        if (g < 0) g = 0;
+        if (g < 0) g   = 0;
         if (g > 255) g = 255;
-        if (b < 0) b = 0;
+        if (b < 0) b   = 0;
         if (b > 255) b = 255;
-        if (a < 0) a = 0;
+        if (a < 0) a   = 0;
         if (a > 255) a = 255;
 
         return ((ARGB)a << 24) | ((ARGB)r << 16) | ((ARGB)g << 8) | (ARGB)b;
@@ -80,48 +80,52 @@ namespace esp {
 
         if (!cg || !o) return false;
 
-        char* rd = (char*)cg + CG_REFDEF;
+        char* rd        = (char*)cg + CG_REFDEF;
         char* placement = (char*)(u64)A_ScreenPlacement;
-
-        Vec3 vo = RV3(rd, RD_ORG);
-        Vec3 fwd = RV3(rd, RD_AXIS);
-        Vec3 right = RV3(rd, RD_AXIS + 12);
-        Vec3 up = RV3(rd, RD_AXIS + 24);
-
-        float fx = RF(rd, RD_FOV);
-        float fy = RF(rd, RD_FOV + 4);
-
-        Vec3 d = {w.x - vo.x, w.y - vo.y, w.z - vo.z};
-
-        float tx = d.x * right.x + d.y * right.y + d.z * right.z;
-        float ty = d.x * up.x + d.y * up.y + d.z * up.z;
-        float tz = d.x * fwd.x + d.y * fwd.y + d.z * fwd.z;
-
-        float width = RF(placement, 0x40);
-        float height = RF(placement, 0x44);
+        Vec3 vo         = RV3(rd, RD_ORG);
+        Vec3 fwd        = RV3(rd, RD_AXIS);
+        Vec3 right      = RV3(rd, RD_AXIS + 12);
+        Vec3 up         = RV3(rd, RD_AXIS + 24);
+        float fx        = RF(rd, RD_FOV);
+        float fy        = RF(rd, RD_FOV + 4);
+        Vec3 d          = { w.x - vo.x, w.y - vo.y, w.z - vo.z };
+        float tx        = d.x * right.x + d.y * right.y + d.z * right.z;
+        float ty        = d.x * up.x + d.y * up.y + d.z * up.z;
+        float tz        = d.x * fwd.x + d.y * fwd.y + d.z * fwd.z;
+        float width     = RF(placement, 0x40);
+        float height    = RF(placement, 0x44);
 
         if (tz < 0.0f) {
             o->x = -tx;
             o->y = -ty;
+
             if (fabsf(o->x) < 0.001f) {
                 if (fabsf(o->y) < 0.001f) {
                     o->y = height * 2.0f;
+
                     return false;
                 }
+
                 o->x = 0.001f;
             }
+
             if (fabsf(o->y) < 0.001f) o->y = 0.001f;
+
             while (fabsf(o->x) < width) {
                 o->x *= width;
                 o->y *= width;
             }
+
             while (fabsf(o->y) < height) {
                 o->x *= height;
                 o->y *= height;
             }
+
             return false;
         }
+
         float inverseDepth = 1.0f / tz;
+
         o->x = -((tx / fx) * inverseDepth - 1.0f) * width * 0.5f + RF(placement, 0x38);
         o->y = -((ty / fy) * inverseDepth - 1.0f) * height * 0.5f + RF(placement, 0x3C);
 
@@ -137,14 +141,17 @@ namespace esp {
             int w = pTextW(0, s, 0x7FFFFFFF, s_font);
             if (w > 0) return (float)w * scale;
         }
+
         int n = 0;
-        while (s[n]) ++n;
+
+        while (s[n])++n;
 
         return n * scale * 20.0f;
 
     }
     int FontH() {
         if (!s_font) return 30;
+
         int h = *(int*)((char*)(u64)(u32)s_font + 4);
 
         return (h > 0 && h < 512) ? h : 30;
@@ -153,7 +160,9 @@ namespace esp {
     void DrawText(const char* s, float x, float y, ARGB col) {
 
         if (!s || !s_font) return;
+
         float c[4];
+
         Vec4Of(col, c);
         pText(s, 0x7FFFFFFF, s_font, x, y, kScale, kScale, 0.0f, c, 4);
 
@@ -161,7 +170,9 @@ namespace esp {
     void DrawRect(float x, float y, float w, float h, ARGB col) {
 
         if (!s_white) return;
+
         float c[4];
+
         Vec4Of(col, c);
         pStretch(x, y, w, h, 0.0f, 0.0f, 1.0f, 1.0f, c, s_white);
 
@@ -171,13 +182,12 @@ namespace esp {
 
         if (!s_white) return;
 
-        float dx = x1 - x0;
-        float dy = y1 - y0;
+        float dx  = x1 - x0;
+        float dy  = y1 - y0;
         float len = sqrtf(dx * dx + dy * dy);
-
         if (len < 0.01f) return;
 
-        float ang = atanf(dy / dx) * 57.295776f;
+        float ang   = atanf(dy / dx) * 57.295776f;
         float thick = 1.0f;
         float c[4];
 
@@ -189,25 +199,27 @@ namespace esp {
     static bool ReadableVec3(const void* value) {
 
         if (!value) return false;
+
         u32 address = (u32)value;
         if ((address & 3u) != 0) return false;
         if (address > 0xFFFFFFF4u) return false;
         MEMORY_BASIC_INFORMATION mbi;
-        if (!VirtualQuery(value, &mbi, sizeof(mbi))) return false;
+        if (!VirtualQuery(value, &mbi, sizeof (mbi))) return false;
         if (mbi.State != MEM_COMMIT) return false;
         if (mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD)) return false;
         u32 regionStart = (u32)mbi.BaseAddress;
-        u32 regionEnd = regionStart + (u32)mbi.RegionSize;
+        u32 regionEnd   = regionStart + (u32)mbi.RegionSize;
         if (regionEnd < regionStart) return false;
 
-        return address >= regionStart && address + sizeof(Vec3) <= regionEnd;
+        return address >= regionStart && address + sizeof (Vec3) <= regionEnd;
 
     }
 
     void OnBulletEmit(unsigned owner, const void* endpoint) {
 
         if (!CB(V_TRACERS) || !ReadableVec3(endpoint)) return;
-        void* cg = CG();
+
+        void* cg       = CG();
         char* entities = Entities();
         if (!cg || !entities) return;
         int local = RI(cg, CG_CLIENTNUM);
@@ -215,23 +227,27 @@ namespace esp {
         short type = *(short*)(entities + local * ENT_STRIDE + E_TYPE);
         if (type != 1 && type != 0x10) return;
         TracerRecord rec;
+
         rec.start.x = rec.start.y = rec.start.z = 0.0f;
 
         if (CB(0x90B433A1)) {
             if (!TagPos(entities, local, "tag_flash", &rec.start)) return;
         } else {
             u8 scratch[0xB4];
-            for (int i = 0; i < (int)sizeof(scratch); ++i) scratch[i] = 0;
-            char* ent = entities + local * ENT_STRIDE;
+
+            for (int i = 0; i < (int)sizeof (scratch); ++i) scratch[i] = 0;
+            char* ent    = entities + local * ENT_STRIDE;
             u32 tagFlash = (u32)(unsigned short)pSL("tag_flash", 0);
-            int weapon = RI(ent, E_WEAPIDX);
-            void* ps = (char*)cg + 0x480A8;
+            int weapon   = RI(ent, E_WEAPIDX);
+            void* ps     = (char*)cg + 0x480A8;
+
             if (!pCalcMuzzle(0, ent, tagFlash, ps, weapon, 0x20, 1, scratch + 0xB0, &rec.start, scratch + 0xA0,
-                             scratch + 0xAC, scratch + 0x70, scratch + 0x60, scratch + 0xA8, scratch + 0xA4))
+                    scratch + 0xAC, scratch + 0x70, scratch + 0x60, scratch + 0xA8, scratch + 0xA4))
                 return;
         }
-        rec.end = *(const Vec3*)endpoint;
-        rec.born = GetTickCount();
+
+        rec.end     = *(const Vec3*)endpoint;
+        rec.born    = GetTickCount();
         rec.rgba[0] = CFp(C_ACCENT)[0];
         rec.rgba[1] = CFp(C_ACCENT)[1];
         rec.rgba[2] = CFp(C_ACCENT)[2];
