@@ -21,7 +21,7 @@ namespace aimbot {
 
     void ApplyAimbotPatches(void* cg) {
         const u32 nop = 0x60000000;
-        bool recoil = CB(CFG_RECOIL) != 0;
+        bool recoil   = CB(CFG_RECOIL) != 0;
 
         PatchWord(0x82259BC8, recoil ? 0x38600001 : 0x48461341);
         PatchWord(0x8223AC00, recoil ? nop : 0x4800000C);
@@ -37,7 +37,7 @@ namespace aimbot {
     }
 
     float AimFovPixels() { return *(volatile float*)0x83C59ED8 * 2.0f; }
-    volatile float s_viewYaw = 0.0f;
+    volatile float s_viewYaw   = 0.0f;
     volatile float s_viewPitch = 0.0f;
 
     void* CG() {
@@ -57,13 +57,13 @@ namespace aimbot {
 
         if (cs && (((u32)(u64)cs) >> 28) == 0xB) {
             *pitch = RF(cs, CS_VPITCH);
-            *yaw = RF(cs, CS_VYAW);
+            *yaw   = RF(cs, CS_VYAW);
 
             return;
         }
 
         *pitch = s_viewPitch;
-        *yaw = s_viewYaw;
+        *yaw   = s_viewYaw;
     }
 
     char* Entities() {
@@ -75,17 +75,17 @@ namespace aimbot {
     bool WorldToScreen(void* cg, const Vec3& world, Vec2* out) {
         if (!cg || !out) return false;
 
-        char* rd = (char*)cg + CG_REFDEF;
-        Vec3 eye = RV3(rd, RD_ORG);
+        char* rd     = (char*)cg + CG_REFDEF;
+        Vec3 eye     = RV3(rd, RD_ORG);
         Vec3 forward = RV3(rd, RD_AXIS);
-        Vec3 right = RV3(rd, RD_AXIS + 12);
-        Vec3 up = RV3(rd, RD_AXIS + 24);
-        Vec3 d = {world.x - eye.x, world.y - eye.y, world.z - eye.z};
-        float tx = d.x * right.x + d.y * right.y + d.z * right.z;
-        float ty = d.x * up.x + d.y * up.y + d.z * up.z;
-        float tz = d.x * forward.x + d.y * forward.y + d.z * forward.z;
-        float fx = RF(rd, RD_FOV);
-        float fy = RF(rd, RD_FOV + 4);
+        Vec3 right   = RV3(rd, RD_AXIS + 12);
+        Vec3 up      = RV3(rd, RD_AXIS + 24);
+        Vec3 d       = { world.x - eye.x, world.y - eye.y, world.z - eye.z };
+        float tx     = d.x * right.x + d.y * right.y + d.z * right.z;
+        float ty     = d.x * up.x + d.y * up.y + d.z * up.z;
+        float tz     = d.x * forward.x + d.y * forward.y + d.z * forward.z;
+        float fx     = RF(rd, RD_FOV);
+        float fy     = RF(rd, RD_FOV + 4);
         if (tz < 0.1f || fx == 0.0f || fy == 0.0f) return false;
 
         out->x = RI(rd, RD_W) * 0.5f * (1.0f - tx / fx / tz);
@@ -111,7 +111,7 @@ namespace aimbot {
     TagPos_t pTag = (TagPos_t)A_TagPos;
 
     bool TagPos(char* base, int idx, const char* tag, Vec3* out) {
-        char* e = base + idx * ENT_STRIDE;
+        char* e  = base + idx * ENT_STRIDE;
         int dobj = pDObj(idx, 0);
         if (!e || !dobj) return false;
 
@@ -123,7 +123,7 @@ namespace aimbot {
     void ApplyAimPrediction(void* cg, char* entities, int targetIdx, Vec3* point) {
         if (!cg || !entities || !point || targetIdx < 0 || targetIdx >= 18) return;
 
-        char* entity = entities + targetIdx * ENT_STRIDE;
+        char* entity  = entities + targetIdx * ENT_STRIDE;
         Vec3 adjusted = *point;
 
         if (CB(CFG_POSITION_PREDICT)) {
@@ -134,10 +134,10 @@ namespace aimbot {
                 pCalcEntityLerpPositions(cg, snapshot, 0);
                 float amount = CF(CFG_POSITION_PREDICT_AMOUNT);
 
-                adjusted.x += (*(float*)(snapshot + E_ORIGIN + 0) - RF(entity, E_ORIGIN + 0)) * amount;
-                adjusted.y += (*(float*)(snapshot + E_ORIGIN + 4) - RF(entity, E_ORIGIN + 4)) * amount;
-                adjusted.z += (*(float*)(snapshot + E_ORIGIN + 8) - RF(entity, E_ORIGIN + 8)) * amount;
-            } __except (EXCEPTION_EXECUTE_HANDLER) {
+                adjusted.x += (*(float*)(snapshot + E_ORIGIN + 0)- RF(entity, E_ORIGIN + 0)) * amount;
+                adjusted.y += (*(float*)(snapshot + E_ORIGIN + 4)- RF(entity, E_ORIGIN + 4)) * amount;
+                adjusted.z += (*(float*)(snapshot + E_ORIGIN + 8)- RF(entity, E_ORIGIN + 8)) * amount;
+            } __except(EXCEPTION_EXECUTE_HANDLER) {
             }
         }
 
@@ -158,15 +158,15 @@ namespace aimbot {
                     adjusted.z -= (curZ - oldZ) * amount * 0.25f;
                 }
             } else {
-                u32 firstPing = *(volatile u32*)((char*)cg + 0x84);
-                u32 secondPing = *(volatile u32*)((char*)cg + 0x24084);
-                float pingSeconds = (float)((firstPing + secondPing) >> 1) * 0.001f;
+                u32 firstPing     = *(volatile u32*)((char*)cg + 0x84);
+                u32 secondPing    = *(volatile u32*)((char*)cg + 0x24084);
+                float pingSeconds = (float)((firstPing + secondPing)>> 1)* 0.001f;
 
                 adjusted.x += (curX - oldX) * pingSeconds;
                 adjusted.y += (curY - oldY) * pingSeconds;
                 adjusted.z += (curZ - oldZ) * pingSeconds;
             }
-        } __except (EXCEPTION_EXECUTE_HANDLER) {
+        } __except(EXCEPTION_EXECUTE_HANDLER) {
         }
 
         *point = adjusted;

@@ -6,7 +6,7 @@ namespace reconrender {
 
     static u32 s_stubs[DET_MAX][DET_WORDS];
     static int s_stubCount = 0;
-    static bool s_rwx = false;
+    static bool s_rwx      = false;
     static void Sync(void* p) {
         __dcbst(0, p);
         __sync();
@@ -34,9 +34,9 @@ namespace reconrender {
         bool m_installed;
         int m_stubIdx;
 
-        Detour() : m_src(0), m_stub(0), m_installed(false), m_stubIdx(-1) {}
+        Detour(): m_src(0), m_stub(0), m_installed(false), m_stubIdx(-1) {}
 
-        template <class Fn>
+        template < class Fn >
         Fn Original() const {
             return reinterpret_cast<Fn>(m_stub);
         }
@@ -53,11 +53,11 @@ namespace reconrender {
             if (!s_rwx) {
                 DWORD o;
 
-                VirtualProtect(s_stubs, sizeof(s_stubs), PAGE_EXECUTE_READWRITE, &o);
+                VirtualProtect(s_stubs, sizeof (s_stubs), PAGE_EXECUTE_READWRITE, &o);
                 s_rwx = true;
             }
 
-            m_src = (u32*)s;
+            m_src  = (u32*)s;
             m_stub = s_stubs[m_stubIdx];
 
             for (int i = 0; i < 4; ++i) m_orig[i] = m_src[i];
@@ -84,7 +84,7 @@ namespace reconrender {
                     m_stub[n++] = ins;
             }
 
-            PatchJump(&m_stub[n], (u32)(u64)&m_src[4], false);
+            PatchJump(&m_stub[n], (u32)(u64) & m_src[4], false);
             for (int i = 0; i < n + 4; ++i) Sync(&m_stub[i]);
             PatchJump(m_src, (u32)(u64)dst, false);
             m_installed = true;
@@ -100,7 +100,7 @@ namespace reconrender {
                     m_src[i] = m_orig[i];
                     Sync(&m_src[i]);
                 }
-            } __except (EXCEPTION_EXECUTE_HANDLER) {
+            } __except(EXCEPTION_EXECUTE_HANDLER) {
             }
             m_installed = false;
         }
@@ -117,8 +117,8 @@ namespace reconrender {
     static Detour s_servercommand;
     static Detour s_uicolor;
     static Detour s_setcamo;
-    static volatile bool s_running = false;
-    static HANDLE s_bootThread = 0;
+    static volatile bool s_running    = false;
+    static HANDLE s_bootThread        = 0;
     static volatile bool s_bootExited = false;
 
     static void ForceUiRgb(u32 destination) {
@@ -135,7 +135,8 @@ namespace reconrender {
     }
 
     typedef void(__cdecl* UiColourFn)(u32, u16, u32, u32, u32, u32);
-    static void __cdecl hkUiColour(u32 assetRecord, u16 param2, u32 param3, u32 param4, u32 colour, u32 param6) {
+    static void __cdecl hkUiColour(u32 assetRecord, u16 param2, u32 param3, u32 param4, u32 colour,
+        u32 param6) {
         const char* name = 0;
 
         __try {
@@ -144,15 +145,15 @@ namespace reconrender {
 
             if (name && *Bp(0x90B438FAu)) {
                 bool apply = (SameStr(name, "ui_globe") && *Bp(0x90B438FCu)) ||
-                             (ContainsStr(name, "lui_") && *Bp(0x90B43900u)) ||
-                             (ContainsStr(name, "hud") && *Bp(0x90B43901u)) ||
-                             (ContainsStr(name, "minimap") && *Bp(0x90B43902u)) || ContainsStr(name, "controller") ||
-                             (SameStr(name, "menu_mp_soldiers") && *Bp(0x90B438FDu)) || ContainsStr(name, "score_") ||
-                             (SameStr(name, "ui_holotable_grid3") && *Bp(0x90B438FEu));
+                (ContainsStr(name, "lui_") && *Bp(0x90B43900u)) ||
+                (ContainsStr(name, "hud") && *Bp(0x90B43901u)) ||
+                (ContainsStr(name, "minimap") && *Bp(0x90B43902u)) || ContainsStr(name, "controller") ||
+                (SameStr(name, "menu_mp_soldiers") && *Bp(0x90B438FDu)) || ContainsStr(name, "score_") ||
+                (SameStr(name, "ui_holotable_grid3") && *Bp(0x90B438FEu));
 
                 if (apply) ForceUiRgb(colour);
             }
-        } __except (EXCEPTION_EXECUTE_HANDLER) {
+        } __except(EXCEPTION_EXECUTE_HANDLER) {
         }
         UiColourFn original = s_uicolor.Original<UiColourFn>();
 
@@ -160,8 +161,9 @@ namespace reconrender {
     }
 
     typedef void(__cdecl* SetCamoFn)(u32, u32, float, u32, u32, u32, u32);
-    static void __cdecl hkSetCamo(u32 param1, u32 param2, float param3, u32 param4, u32 camo, u32 param6, u32 param7) {
-        if (*Bp(0x90B438D3u) && esp::InGame()) camo = (u32)*Bp(0x90B438DCu);
+    static void __cdecl hkSetCamo(u32 param1, u32 param2, float param3, u32 param4, u32 camo,
+        u32 param6, u32 param7) {
+        if (*Bp(0x90B438D3u) && esp::InGame()) camo = (u32) * Bp(0x90B438DCu);
         SetCamoFn original = s_setcamo.Original<SetCamoFn>();
 
         if (original) original(param1, param2, param3, param4, camo, param6, param7);
@@ -197,7 +199,7 @@ namespace reconrender {
 
         u32 len = 0;
 
-        while (message[len] && len <= 0x688u) ++len;
+        while (message[len] && len <= 0x688u)++len;
 
         if (len > 0x688u) {
             message[0] = 0;
@@ -261,7 +263,7 @@ namespace reconrender {
     static void __cdecl hkChatCommand(u32 client, char* message, void* extra) {
         __try {
             ProcessChatCommand(client, message);
-        } __except (EXCEPTION_EXECUTE_HANDLER) {
+        } __except(EXCEPTION_EXECUTE_HANDLER) {
         }
         ChatCommandFn orig = s_chatcommand.Original<ChatCommandFn>();
 
@@ -271,10 +273,10 @@ namespace reconrender {
     static const char* ResolveNetSenderName(u32 context) {
         if (!context) return "";
 
-        typedef u32(__cdecl * PartyGetActiveFn)();
-        typedef u32(__cdecl * PartyMemberAddressKeyFn)(u32, int);
+        typedef u32(__cdecl* PartyGetActiveFn)();
+        typedef u32(__cdecl* PartyMemberAddressKeyFn)(u32, int);
 
-        PartyGetActiveFn getActive = (PartyGetActiveFn)(u64)A_PartyGetActive;
+        PartyGetActiveFn getActive        = (PartyGetActiveFn)(u64)A_PartyGetActive;
         PartyMemberAddressKeyFn memberKey = (PartyMemberAddressKeyFn)(u64)A_PartyMemberAddressKey;
 
         __try {
@@ -304,7 +306,7 @@ namespace reconrender {
 
                 return name ? name : "";
             }
-        } __except (EXCEPTION_EXECUTE_HANDLER) {
+        } __except(EXCEPTION_EXECUTE_HANDLER) {
         }
 
         return "";
@@ -313,14 +315,14 @@ namespace reconrender {
     typedef void(__cdecl* NetValidateFn)(u32, u32);
     static void __cdecl hkNetValidate(u32 context, u32 message) {
         bool drop = false;
-        bool rme = false;
+        bool rme  = false;
 
         __try {
             if (*Bp(0x90B4339Fu) && message) {
                 volatile u8* record = *(volatile u8**)(u64)(message + 8u);
 
                 if (record && ((*(volatile u32*)record & 0xC0000000u) != 0)) {
-                    s8 fieldA = *(volatile s8*)(record + 4);
+                    s8 fieldA  = *(volatile s8*)(record + 4);
                     s16 fieldB = *(volatile s16*)(record + 6);
                     u16 fieldC = *(volatile u16*)(record + 8);
 
@@ -328,17 +330,17 @@ namespace reconrender {
 
                     if (!drop && fieldC > 0x7FFFu) {
                         drop = true;
-                        rme = true;
+                        rme  = true;
                     }
                 }
             }
-        } __except (EXCEPTION_EXECUTE_HANDLER) {
+        } __except(EXCEPTION_EXECUTE_HANDLER) {
             drop = false;
         }
 
         if (drop) {
             NotifyPlayer(rme ? "Prevented RME Exploit From: " : "Prevented Server Exploit From: ",
-                         ResolveNetSenderName(context), 3000);
+                ResolveNetSenderName(context), 3000);
 
             return;
         }
@@ -349,21 +351,21 @@ namespace reconrender {
     }
 
     static bool ServerCommandAllowed(u32 localClientNum) {
-        typedef const char*(__cdecl * CmdArgvFn)(int);
-        typedef int(__cdecl * AtoiFn)(const char*);
+        typedef const char*(__cdecl* CmdArgvFn)(int);
+        typedef int(__cdecl* AtoiFn)(const char*);
 
-        CmdArgvFn cmdArgv = (CmdArgvFn)(u64)A_CmdArgv;
-        AtoiFn atoiFn = (AtoiFn)(u64)A_Atoi;
+        CmdArgvFn cmdArgv   = (CmdArgvFn)(u64)A_CmdArgv;
+        AtoiFn atoiFn       = (AtoiFn)(u64)A_Atoi;
         const char* command = cmdArgv(0);
         if (!command || (u8)command[0] != 0x69u) return true;
 
         const char* arg1Text = cmdArgv(1);
-        u32 arg1 = (u32)atoiFn(arg1Text);
+        u32 arg1             = (u32)atoiFn(arg1Text);
         const char* arg2Text = cmdArgv(2);
 
         atoiFn(arg2Text);
 
-        u32 cg = *(volatile u32*)(u64)0x82BBAE68u;
+        u32 cg        = *(volatile u32*)(u64)0x82BBAE68u;
         u32 candidate = (localClientNum * 0x21DC0u + arg1 + 0x1A223u) * 4u + cg;
 
         if (candidate >= 0xC0000000u && candidate < 0xC0010000u) {
@@ -383,7 +385,7 @@ namespace reconrender {
 
         __try {
             allowed = ServerCommandAllowed(localClientNum);
-        } __except (EXCEPTION_EXECUTE_HANDLER) {
+        } __except(EXCEPTION_EXECUTE_HANDLER) {
             allowed = true;
         }
         if (!allowed) return;
@@ -392,31 +394,31 @@ namespace reconrender {
         if (orig) orig(localClientNum);
     }
 
-    typedef void (*PaintFn)(int, int);
+    typedef void(* PaintFn)(int, int);
     static void __cdecl hkPaint(int r3, int r4) {
         PaintFn orig = s_paint.Original<PaintFn>();
 
         if (orig) orig(r3, r4);
         __try {
             Frame();
-        } __except (EXCEPTION_EXECUTE_HANDLER) {
+        } __except(EXCEPTION_EXECUTE_HANDLER) {
         }
     }
     typedef unsigned long(__cdecl* XInputFn)(unsigned long, XINPUT_STATE*);
     static unsigned long __cdecl hkXInput(unsigned long idx, XINPUT_STATE* st) {
-        XInputFn orig = s_xinput.Original<XInputFn>();
-        unsigned long r = orig ? orig(idx, st) : (unsigned long)ERROR_DEVICE_NOT_CONNECTED;
+        XInputFn orig   = s_xinput.Original<XInputFn>();
+        unsigned long r = orig ? orig(idx, st) :(unsigned long)ERROR_DEVICE_NOT_CONNECTED;
 
         if (r == ERROR_SUCCESS && st && idx == 0) {
             __try {
                 Input(st->Gamepad.wButtons, st->Gamepad.bLeftTrigger);
 
                 if (!g_open) aimbot::ApplyInputSynth(&st->Gamepad.wButtons, &st->Gamepad.bRightTrigger);
-            } __except (EXCEPTION_EXECUTE_HANDLER) {
+            } __except(EXCEPTION_EXECUTE_HANDLER) {
             }
 
             if (g_open) {
-                st->Gamepad.wButtons &= (unsigned short)~0x330F;
+                st->Gamepad.wButtons &=(unsigned short)~0x330F;
             }
         }
 
@@ -428,7 +430,7 @@ namespace reconrender {
         if (clientNum == 0) {
             __try {
                 aimbot::InjectCmd();
-            } __except (EXCEPTION_EXECUTE_HANDLER) {
+            } __except(EXCEPTION_EXECUTE_HANDLER) {
             }
         }
 
@@ -445,28 +447,29 @@ namespace reconrender {
 
         __try {
             aimbot::ApplyFakeModel(localClientNum, centity);
-        } __except (EXCEPTION_EXECUTE_HANDLER) {
+        } __except(EXCEPTION_EXECUTE_HANDLER) {
         }
     }
 
     typedef void(__cdecl* EntityEventFn)(int, void*, unsigned, void*);
-    static void __cdecl hkEntityEvent(int localClientNum, void* centity, unsigned event, void* eventData) {
+    static void __cdecl hkEntityEvent(int localClientNum, void* centity, unsigned event,
+        void* eventData) {
         __try {
             aimbot::OnEntityEvent(centity, event);
-        } __except (EXCEPTION_EXECUTE_HANDLER) {
+        } __except(EXCEPTION_EXECUTE_HANDLER) {
         }
         EntityEventFn orig = s_entityevent.Original<EntityEventFn>();
 
         if (orig) orig(localClientNum, centity, event, eventData);
     }
 
-    typedef void(__cdecl* BulletEmitFn)(void*, unsigned, void*, void*, void*, const void*, void*, void*, u32, u32, u32,
-                                        u32, u32);
-    static void __cdecl hkBulletEmit(void* a1, unsigned owner, void* a3, void* a4, void* a5, const void* endpoint,
-                                     void* a7, void* a8, u32 a9, u32 a10, u32 a11, u32 a12, u32 a13) {
+    typedef void(__cdecl* BulletEmitFn)(void*, unsigned, void*, void*, void*, const void*, void*,
+        void*, u32, u32, u32, u32, u32);
+    static void __cdecl hkBulletEmit(void* a1, unsigned owner, void* a3, void* a4, void* a5,
+        const void* endpoint, void* a7, void* a8, u32 a9, u32 a10, u32 a11, u32 a12, u32 a13) {
         __try {
             esp::OnBulletEmit(owner, endpoint);
-        } __except (EXCEPTION_EXECUTE_HANDLER) {
+        } __except(EXCEPTION_EXECUTE_HANDLER) {
         }
         BulletEmitFn orig = s_bulletemit.Original<BulletEmitFn>();
 
@@ -478,8 +481,8 @@ namespace reconrender {
 
     static int __cdecl hkTagWorld(void* centity, void* dobj, u32 tag, void* axis, Vec3* out) {
         TagWorldFn orig = s_tagworld.Original<TagWorldFn>();
-        int result = orig ? orig(centity, dobj, tag, axis, out) : 0;
-        u16 headTag = s_thirdPersonHeadTag;
+        int result      = orig ? orig(centity, dobj, tag, axis, out) : 0;
+        u16 headTag     = s_thirdPersonHeadTag;
         if (!out || !headTag || tag != (u32)headTag || !*Bp(0x90B433A1)) return result;
 
         void* cg = *(void**)(u64)0x82BBAE68u;
@@ -488,12 +491,12 @@ namespace reconrender {
         if (*(volatile u32*)(u64)base != *(volatile u32*)(u64)(base + 0x48248u)) return result;
 
         __try {
-            void* playerState = (void*)(u64)(base + 0x480A8u);
+            void* playerState     = (void*)(u64)(base + 0x480A8u);
             GetPlayerEyeFn getEye = (GetPlayerEyeFn)(u64)A_BG_GetPlayerEyePosition;
 
             getEye(playerState, out, *(volatile u32*)playerState);
             out->z = *(volatile float*)(u64)(base + 0x480D8u) + *Fp(0x90B438F0);
-        } __except (EXCEPTION_EXECUTE_HANDLER) {
+        } __except(EXCEPTION_EXECUTE_HANDLER) {
         }
 
         return result;
@@ -533,8 +536,8 @@ namespace reconrender {
         volatile u32* p = (volatile u32*)(u64)0x828BA040u;
         bool stock = p[0] == 0x7D8802A6u && p[1] == 0x4805BF25u && p[2] == 0x9421FF40u && p[3] == 0x7C7F1B78u;
         bool resident = (p[0] & 0xFFFF0000u) == 0x3C000000u && (p[1] & 0xFFFF0000u) == 0x60000000u &&
-                        p[2] == 0x7C0903A6u && p[3] == 0x4E800420u && (p[0] & 0xFFFFu) >= 0x9000u &&
-                        (p[0] & 0xFFFFu) < 0x9200u;
+        p[2] == 0x7C0903A6u && p[3] == 0x4E800420u && (p[0] & 0xFFFFu) >= 0x9000u &&
+        (p[0] & 0xFFFFu) < 0x9200u;
 
         return stock || resident;
     }
@@ -543,8 +546,8 @@ namespace reconrender {
         volatile u32* p = (volatile u32*)(u64)0x82245B48u;
         bool stock = p[0] == 0x7D8802A6u && p[1] == 0x486D0405u && p[2] == 0xDBA1FF50u && p[3] == 0xDBC1FF58u;
         bool resident = (p[0] & 0xFFFF0000u) == 0x3C000000u && (p[1] & 0xFFFF0000u) == 0x60000000u &&
-                        p[2] == 0x7C0903A6u && p[3] == 0x4E800420u && (p[0] & 0xFFFFu) >= 0x9000u &&
-                        (p[0] & 0xFFFFu) < 0x9200u;
+        p[2] == 0x7C0903A6u && p[3] == 0x4E800420u && (p[0] & 0xFFFFu) >= 0x9000u &&
+        (p[0] & 0xFFFFu) < 0x9200u;
 
         return stock || resident;
     }
@@ -593,7 +596,7 @@ namespace reconrender {
     void Start() {
         if (s_running) return;
 
-        s_running = true;
+        s_running    = true;
         s_bootExited = false;
         unsigned long t = 0;
 
@@ -603,13 +606,13 @@ namespace reconrender {
     void Stop() {
         if (!s_running && !s_bootThread && !s_keyboardThread) return;
 
-        s_running = false;
+        s_running      = false;
         s_keyboardStop = true;
 
         if (s_keyboardThread) {
             __try {
                 ((void(__cdecl*)(u32))(u64)0x816F2E60u)(0);
-            } __except (EXCEPTION_EXECUTE_HANDLER) {
+            } __except(EXCEPTION_EXECUTE_HANDLER) {
             }
             WaitForSingleObject(s_keyboardThread, 4000);
             CloseHandle(s_keyboardThread);
@@ -618,7 +621,7 @@ namespace reconrender {
 
         __try {
             esp::Shutdown();
-        } __except (EXCEPTION_EXECUTE_HANDLER) {
+        } __except(EXCEPTION_EXECUTE_HANDLER) {
         }
         __try {
             s_setcamo.Remove();
@@ -633,7 +636,7 @@ namespace reconrender {
             s_clcmd.Remove();
             s_xinput.Remove();
             s_paint.Remove();
-        } __except (EXCEPTION_EXECUTE_HANDLER) {
+        } __except(EXCEPTION_EXECUTE_HANDLER) {
         }
         Sleep(140);
 

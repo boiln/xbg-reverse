@@ -6,6 +6,6 @@ namespace autowall {
         float score;
     };
 
-    bool Evaluate(void* cg, void* entities, int localClient, int targetClient, const float eye[3], const float end[3],
-                  bool spectatorMode, Result* result);
+    bool Evaluate(void* cg, void* entities, int localClient, int targetClient, const float eye[3],
+        const float end[3], bool spectatorMode, Result* result);
 }

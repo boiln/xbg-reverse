@@ -8,16 +8,16 @@ namespace aimbot {
     void Frame() {
         for (int stateIdx = 0; stateIdx < 18; ++stateIdx) {
             s_espHittable[stateIdx] = 0;
-            s_espVisible[stateIdx] = 0;
+            s_espVisible[stateIdx]  = 0;
         }
 
-        s_reach = 0;
-        s_hasTarget = false;
+        s_reach       = 0;
+        s_hasTarget   = false;
         s_aaHasTarget = false;
-        int mode = CB(CFG_TYPE);
+        int mode   = CB(CFG_TYPE);
         bool aimOn = mode != 0;
-        bool aaOn = CB(AA_ENABLE) != 0 && (CB(AA_YAW) != 0 || CB(AA_PITCH) != 0);
-        void* cg = CG();
+        bool aaOn  = CB(AA_ENABLE) != 0 && (CB(AA_YAW) != 0 || CB(AA_PITCH) != 0);
+        void* cg   = CG();
         if (!aimOn && !aaOn) return;
         s_reach = 1;
         if (!cg) return;
@@ -29,47 +29,47 @@ namespace aimbot {
         if (!base) return;
         s_reach = 4;
 
-        int localIdx = RI(cg, CG_CLIENTNUM);
+        int localIdx     = RI(cg, CG_CLIENTNUM);
         Vec3 localOrigin = RV3(base + localIdx * ENT_STRIDE, E_ORIGIN);
-        Vec3 eye = RV3(rd, RD_ORG);
+        Vec3 eye         = RV3(rd, RD_ORG);
 
         __try {
             void* ps = (char*)cg + 0x480A8;
 
             pGetPlayerViewOrigin(0, ps, &eye);
-        } __except (EXCEPTION_EXECUTE_HANDLER) {
+        } __except(EXCEPTION_EXECUTE_HANDLER) {
             eye = RV3(rd, RD_ORG);
         }
-        Vec3 fwd = RV3(rd, RD_AXIS);
-        float curYaw = atan2f(fwd.y, fwd.x) * RAD2DEG;
+        Vec3 fwd       = RV3(rd, RD_AXIS);
+        float curYaw   = atan2f(fwd.y, fwd.x) * RAD2DEG;
         float curPitch = -atan2f(fwd.z, sqrtf(fwd.x * fwd.x + fwd.y * fwd.y)) * RAD2DEG;
 
-        s_viewYaw = curYaw;
+        s_viewYaw   = curYaw;
         s_viewPitch = curPitch;
 
-        int cand = 0;
-        float best = 1e18f;
-        float bYaw = 0;
-        float bPitch = 0;
-        int bIdx = -1;
-        bool found = false;
-        bool bOnScreen = false;
-        Vec3 bAimPt = {0, 0, 0};
-        float bestP = 1e18f;
-        float bYawP = 0;
-        float bPitchP = 0;
-        int bIdxP = -1;
-        bool foundP = false;
+        int cand        = 0;
+        float best      = 1e18f;
+        float bYaw      = 0;
+        float bPitch    = 0;
+        int bIdx        = -1;
+        bool found      = false;
+        bool bOnScreen  = false;
+        Vec3 bAimPt     = { 0, 0, 0 };
+        float bestP     = 1e18f;
+        float bYawP     = 0;
+        float bPitchP   = 0;
+        int bIdxP       = -1;
+        bool foundP     = false;
         bool bOnScreenP = false;
-        Vec3 bAimPtP = {0, 0, 0};
-        float aaBest = 3.4e38f;
-        float aaYaw = 0.0f;
-        float aaPitch = 0.0f;
+        Vec3 bAimPtP    = { 0, 0, 0 };
+        float aaBest    = 3.4e38f;
+        float aaYaw     = 0.0f;
+        float aaPitch   = 0.0f;
         bool aaPriority = false;
         float fovRadius = AimFovPixels();
-        float centerX = RI(rd, RD_W) * 0.5f;
-        float centerY = RI(rd, RD_H) * 0.5f;
-        int aimBone = CB(CFG_HEAD) ? 2 : (int)CB(CFG_AIMTAG);
+        float centerX   = RI(rd, RD_W) * 0.5f;
+        float centerY   = RI(rd, RD_H) * 0.5f;
+        int aimBone     = CB(CFG_HEAD) ? 2 :(int)CB(CFG_AIMTAG);
 
         if (aimBone < 0 || aimBone >= kBoneCount) aimBone = 2;
 
@@ -86,12 +86,12 @@ namespace aimbot {
             ++cand;
 
             Vec3 targetOrigin = RV3(ent, E_ORIGIN);
-            float odx = targetOrigin.x - localOrigin.x;
-            float ody = targetOrigin.y - localOrigin.y;
-            float odz = targetOrigin.z - localOrigin.z;
-            float distance = sqrtf(odx * odx + ody * ody + odz * odz);
-            Vec3 o = {0.0f, 0.0f, 0.0f};
-            bool hittable = false;
+            float odx         = targetOrigin.x - localOrigin.x;
+            float ody         = targetOrigin.y - localOrigin.y;
+            float odz         = targetOrigin.z - localOrigin.z;
+            float distance    = sqrtf(odx * odx + ody * ody + odz * odz);
+            Vec3 o            = { 0.0f, 0.0f, 0.0f };
+            bool hittable     = false;
             BoneEvalContext boneContext;
 
             boneContext.cg = cg;
@@ -107,7 +107,7 @@ namespace aimbot {
                 bool configuredResolved = ResolveDirectBone(&boneContext, (u8)aimBone, &configuredPoint);
 
                 if (configuredResolved) {
-                    Vec3 directPoint = {configuredPoint.x, configuredPoint.y, configuredPoint.z};
+                    Vec3 directPoint = { configuredPoint.x, configuredPoint.y, configuredPoint.z };
 
                     hittable = DirectBulletTrace(cg, base, localIdx, i, eye, directPoint);
 
@@ -135,9 +135,9 @@ namespace aimbot {
                     autobone::SelectInput input;
 
                     input.configuredSelector = (u8)aimBone;
-                    input.alwaysCheckHead = CB(CFG_HEAD) != 0;
-                    input.priorityClient = CB(MODE_SPECTATOR) == 0 && CB(CFG_PRIORITY + i) != 0;
-                    input.shieldWeapon = RB(ent, 0x1B0) == 0x59 || RB(ent, 0x1B4) == 0x59;
+                    input.alwaysCheckHead    = CB(CFG_HEAD) != 0;
+                    input.priorityClient     = CB(MODE_SPECTATOR) == 0 && CB(CFG_PRIORITY + i) != 0;
+                    input.shieldWeapon       = RB(ent, 0x1B0) == 0x59 || RB(ent, 0x1B4) == 0x59;
 
                     input.paused = false;
                     autobone::SelectResult selected;
@@ -151,7 +151,7 @@ namespace aimbot {
                         o.z = selected.position.z;
                     }
                 }
-            } __except (EXCEPTION_EXECUTE_HANDLER) {
+            } __except(EXCEPTION_EXECUTE_HANDLER) {
                 hittable = false;
             }
 
@@ -163,25 +163,25 @@ namespace aimbot {
 
             ApplyAimPrediction(cg, base, i, &o);
 
-            float dx = o.x - eye.x;
-            float dy = o.y - eye.y;
-            float dz = o.z - eye.z;
-            float yaw = atan2f(dy, dx) * RAD2DEG;
-            float pitch = -atan2f(dz, sqrtf(dx * dx + dy * dy)) * RAD2DEG;
+            float dx      = o.x - eye.x;
+            float dy      = o.y - eye.y;
+            float dz      = o.z - eye.z;
+            float yaw     = atan2f(dy, dx) * RAD2DEG;
+            float pitch   = -atan2f(dz, sqrtf(dx * dx + dy * dy)) * RAD2DEG;
             bool priority = CB(CFG_PRIORITY + i) != 0;
 
             if ((!aaPriority && priority) || (priority == aaPriority && distance < aaBest)) {
-                aaBest = distance;
-                aaYaw = yaw;
-                aaPitch = pitch;
-                aaPriority = priority;
+                aaBest        = distance;
+                aaYaw         = yaw;
+                aaPitch       = pitch;
+                aaPriority    = priority;
                 s_aaHasTarget = true;
             }
 
             Vec2 screen;
             bool projected = WorldToScreen(cg, fovPoint, &screen);
             bool onScreen = projected && centerX - fovRadius < screen.x && screen.x < centerX + fovRadius &&
-                            centerY - fovRadius < screen.y && screen.y < centerY + fovRadius;
+            centerY - fovRadius < screen.y && screen.y < centerY + fovRadius;
             float pixelCost = 0.0f;
 
             if (projected) {
@@ -192,38 +192,38 @@ namespace aimbot {
             }
 
             if (distance < best) {
-                best = distance;
-                bYaw = yaw;
-                bPitch = pitch;
-                bIdx = i;
-                bAimPt = o;
+                best      = distance;
+                bYaw      = yaw;
+                bPitch    = pitch;
+                bIdx      = i;
+                bAimPt    = o;
                 bOnScreen = onScreen;
-                found = true;
-                s_cost = projected ? (int)(sqrtf(pixelCost) + 0.5f) : -1;
+                found     = true;
+                s_cost    = projected ? (int)(sqrtf(pixelCost) + 0.5f) : -1;
             }
 
             if (priority && distance < bestP) {
-                bestP = distance;
-                bYawP = yaw;
-                bPitchP = pitch;
-                bIdxP = i;
-                bAimPtP = o;
+                bestP      = distance;
+                bYawP      = yaw;
+                bPitchP    = pitch;
+                bIdxP      = i;
+                bAimPtP    = o;
                 bOnScreenP = onScreen;
-                foundP = true;
+                foundP     = true;
             }
         }
 
         s_reach = 5;
-        s_cand = cand;
+        s_cand  = cand;
 
         if (foundP) {
-            best = bestP;
-            bYaw = bYawP;
-            bPitch = bPitchP;
-            bIdx = bIdxP;
-            bAimPt = bAimPtP;
+            best      = bestP;
+            bYaw      = bYawP;
+            bPitch    = bPitchP;
+            bIdx      = bIdxP;
+            bAimPt    = bAimPtP;
             bOnScreen = bOnScreenP;
-            found = true;
+            found     = true;
         }
 
         if (!found) s_cost = -1;
