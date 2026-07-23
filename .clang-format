@@ -12,7 +12,7 @@ SortIncludes: CaseInsensitive
 IncludeBlocks: Regroup
 IncludeIsMainRegex: '(|\\.h|\\.hh|\\.hpp|\\.hxx)$'
 
-IncludeCategories: # MSVC Precompiled header - MUST be first!
+IncludeCategories:
     - Regex: '^"pch\.h"$'
       Priority: -1
 
