@@ -49,8 +49,6 @@ namespace autowall {
     }
 
     static bool InitFireParams(FireParams* fp, void* cg, const float eye[3], const float end[3]) {
-
-        // fire parameters require normalized direction and mirrored start fields.
         if (!fp || !cg || !eye || !end) return false;
         Clear(fp, sizeof(*fp));
         U32(fp, 0x00) = 0x3FE;
@@ -72,7 +70,6 @@ namespace autowall {
         F32(fp, 0x3C) = dz / len;
 
         return true;
-
     }
 
     typedef int (*BulletTraceFn)(int, FireParams*, void*, TraceResult*, u32, u32);
@@ -91,8 +88,6 @@ namespace autowall {
 
     static bool RetraceType14(void* cg, void* targetEnt, int target, FireParams* fp, TraceResult* trace,
                               bool spectatorMode) {
-
-        // trace type 14 requires a target-facing retry.
         TraceAimPointFn aimPointFn = (TraceAimPointFn)kTraceAimPoint;
         BulletTraceFn traceFn = (BulletTraceFn)kBulletTrace;
         ContinueTraceFn continueFn = (ContinueTraceFn)kContinueTrace;
@@ -140,11 +135,9 @@ namespace autowall {
         U32(fp, 0x04) = (u32)target;
 
         return true;
-
     }
     static void BuildReverse(const FireParams* forward, const TraceResult* hit, const float initialHit[3],
                              FireParams* reverse, TraceResult* reverseTrace) {
-
         Copy(reverse, forward, sizeof(*reverse));
         Copy(reverseTrace, hit, sizeof(*reverseTrace));
         for (int i = 0; i < 3; ++i) {
@@ -154,22 +147,18 @@ namespace autowall {
             F32(reverse, 0x28 + i * 4) = initialHit[i] + dir * 0.01f;
             F32(reverseTrace, i * 4) = -F32(reverseTrace, i * 4);
         }
-
     }
 
     static float DistancePoint(const float a[3], const float b[3]) {
-
         const float x = b[0] - a[0];
         const float y = b[1] - a[1];
         const float z = b[2] - a[2];
 
         return sqrtf(x * x + y * y + z * z);
-
     }
 
     bool Evaluate(void* cg, void* entities, int localClient, int targetClient, const float eye[3],
                   const float targetPoint[3], bool spectatorMode, Result* result) {
-
         if (result) {
             result->direct = false;
             result->score = 0.0f;
@@ -302,9 +291,8 @@ namespace autowall {
                 const float forwardEnd[3] = {F32(&tr, 0x44), F32(&tr, 0x48), F32(&tr, 0x4C)};
                 thickness = DistancePoint(forwardEnd, reverseEnd);
             } else {
-                const float reverseEnd[3] = {
-                    F32(&reverseTrace, 0x44), F32(&reverseTrace, 0x48),
-                    F32(&reverseTrace, 0x4C)};
+                const float reverseEnd[3] = {F32(&reverseTrace, 0x44), F32(&reverseTrace, 0x48),
+                                             F32(&reverseTrace, 0x4C)};
                 thickness = DistancePoint(initialHit, reverseEnd);
             }
             if (!Finite(thickness) || thickness < 0.0f) return false;
@@ -327,6 +315,5 @@ namespace autowall {
         result->score = score;
 
         return true;
-
     }
 }

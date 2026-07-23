@@ -18,9 +18,7 @@ volatile unsigned long XbgBootFaulted = 0;
 volatile unsigned long XbgBooted = 0;
 }
 
-// shuts down hooks and frees the reconstructed arena.
 extern "C" __declspec(dllexport) unsigned long XbgShutdown(void) {
-
     __try {
         reconrender::Stop();
     } __except (EXCEPTION_EXECUTE_HANDLER) {
@@ -31,12 +29,9 @@ extern "C" __declspec(dllexport) unsigned long XbgShutdown(void) {
     }
 
     return 0;
-
 }
 
-// handles process attach initialization and detach cleanup.
 BOOL APIENTRY DllMain(HANDLE, DWORD reason, LPVOID) {
-
     if (reason == DLL_PROCESS_ATTACH) {
         xbg::ArenaInit();
         __try {
@@ -58,5 +53,4 @@ BOOL APIENTRY DllMain(HANDLE, DWORD reason, LPVOID) {
     }
 
     return TRUE;
-
 }

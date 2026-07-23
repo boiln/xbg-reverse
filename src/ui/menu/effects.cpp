@@ -2,7 +2,6 @@
 
 namespace reconrender {
     void ApplyMainConfig() {
-
         if (RealEngineResident()) {
             *(volatile u8*)(u64)0x90B4339Cu = *Bp(0x90B4339Cu);
             *(volatile u8*)(u64)0x90B4339Du = *Bp(0x90B4339Du);
@@ -38,11 +37,9 @@ namespace reconrender {
             __sync();
             __emit(0x4C00012C);
         }
-
     }
 
     void ApplySettingsConfig() {
-
         u32 vsync = *(volatile u32*)(u64)0x84916368u;
 
         if (vsync) *(volatile u8*)(u64)(vsync + 0x18u) = *Bp(0x90B438D1u) ? 0 : 1;
@@ -56,14 +53,14 @@ namespace reconrender {
         }
 
         u32 fixedOff = *(volatile u32*)(u64)0x83B6F49Cu;
-        u32 fixedOn  = *(volatile u32*)(u64)0x841DDFCCu;
+        u32 fixedOn = *(volatile u32*)(u64)0x841DDFCCu;
 
         if (fixedOff && fixedOn) {
             *(volatile u8*)(u64)(fixedOff + 0x18u) = 0;
-            *(volatile u8*)(u64)(fixedOn + 0x18u)  = 1;
+            *(volatile u8*)(u64)(fixedOn + 0x18u) = 1;
         }
 
-        *(volatile u32*)(u64)0x84449014u = *Bp(0x90B42A40u) ? 0x70000000u :(*Bp(0x90B42A35u) ? 0u : 0x539u);
+        *(volatile u32*)(u64)0x84449014u = *Bp(0x90B42A40u) ? 0x70000000u : (*Bp(0x90B42A35u) ? 0u : 0x539u);
 
         if (*Bp(0x90B42A35u) && *Bp(0x90B42A40u)) {
             NotifyMsg("Disabling force host!", 3000);
@@ -72,8 +69,8 @@ namespace reconrender {
 
         static u32 dlcOriginal[8];
         static bool dlcCached = false;
-        static int dlcLast    = -1;
-        int disableDlc        = *Bp(0x90B42A4Cu) ? 1 : 0;
+        static int dlcLast = -1;
+        int disableDlc = *Bp(0x90B42A4Cu) ? 1 : 0;
 
         if (!dlcCached) {
             for (int i = 0; i < 8; ++i) dlcOriginal[i] = *(volatile u32*)(u64)(0x83880EF8u + (u32)i * 0x4Cu);
@@ -122,13 +119,13 @@ namespace reconrender {
             };
 
             static const Patch32 fixed[] = {
-                { 0x82004B5Cu, 0x00000000u }, { 0x822781D8u, 0x60000000u }, { 0x825BAB6Cu, 0x60000000u },
-                { 0x8270F148u, 0x60000000u }, { 0x823C93E8u, 0x4E800020u }, { 0x82903A10u, 0x4E800020u },
-                { 0x822D2D68u, 0x4E800020u }, { 0x825D1BA8u, 0x4E800020u }, { 0x82717D48u, 0x91370000u },
-                { 0x826A5FBCu, 0x3B40FFEFu }, { 0x8219F3CCu, 0x60000000u }, { 0x821A1C04u, 0x60000000u },
-                { 0x821DE58Cu, 0x60000000u }, { 0x821DFC80u, 0x60000000u }, { 0x821DFD64u, 0x60000000u } };
+                {0x82004B5Cu, 0x00000000u}, {0x822781D8u, 0x60000000u}, {0x825BAB6Cu, 0x60000000u},
+                {0x8270F148u, 0x60000000u}, {0x823C93E8u, 0x4E800020u}, {0x82903A10u, 0x4E800020u},
+                {0x822D2D68u, 0x4E800020u}, {0x825D1BA8u, 0x4E800020u}, {0x82717D48u, 0x91370000u},
+                {0x826A5FBCu, 0x3B40FFEFu}, {0x8219F3CCu, 0x60000000u}, {0x821A1C04u, 0x60000000u},
+                {0x821DE58Cu, 0x60000000u}, {0x821DFC80u, 0x60000000u}, {0x821DFD64u, 0x60000000u}};
 
-            for (u32 i = 0; i < sizeof (fixed) / sizeof (fixed[0]); ++i) {
+            for (u32 i = 0; i < sizeof(fixed) / sizeof(fixed[0]); ++i) {
                 *(volatile u32*)(u64)fixed[i].address = fixed[i].value;
                 GtFlush((void*)(u64)fixed[i].address);
             }
@@ -137,11 +134,9 @@ namespace reconrender {
             volatile u64* patchB = (volatile u64*)(u64)0x826A3A90u;
 
             if (*Bp(0x90B438D2u)) {
-                // enabling forces both predicates to their configured return values.
                 *patchA = 0x386000014E800020ull;
                 *patchB = 0x386000004E800020ull;
             } else {
-                // disabling restores both stock prologues.
                 *patchA = 0x7D8802A69181FFF8ull;
                 *patchB = 0x7D8802A6482724F9ull;
             }
@@ -152,26 +147,24 @@ namespace reconrender {
             GtFlush((void*)(u64)0x826A3A94u);
             unlockTick = now;
         }
-
     }
 
     void ApplyGodMode() {
-
         if (*(volatile u32*)(u64)0x83B50F40u == 0) return;
         if (!PlayerMenuIsHost()) return;
 
-        u32 cg  = PlayerMenuCg();
+        u32 cg = PlayerMenuCg();
         u32 cgs = 0;
 
         __try {
             cgs = *(volatile u32*)(u64)A_CGS_POINTER;
-        } __except(EXCEPTION_EXECUTE_HANDLER) {
+        } __except (EXCEPTION_EXECUTE_HANDLER) {
             return;
         }
 
         if (!cg || !cgs) return;
 
-        typedef u64(__cdecl* ClientConnectedFn)(u32);
+        typedef u64(__cdecl * ClientConnectedFn)(u32);
 
         ClientConnectedFn residentConnected = RealEngineResident() ? (ClientConnectedFn)(u64)0x90B19068u : 0;
         int local = *(volatile int*)(u64)cg;
@@ -193,19 +186,17 @@ namespace reconrender {
             if (!connected) continue;
 
             volatile u8* pb = (volatile u8*)(0x83551A2Bull + (u64)i * 0x57F8ull);
-            u8 god          = *Bp(0x90B433F1 + (u32)i);
-            u8 v            = *pb;
+            u8 god = *Bp(0x90B433F1 + (u32)i);
+            u8 v = *pb;
 
             if (!god) {
                 if (v & 5) *pb = (u8)(v & 0xFE);
             } else if (v & 4)
                 *pb = (u8)(v | 1);
         }
-
     }
 
     static bool WriteRenamedPlayer(int target, const char* name) {
-
         if (target < 0 || target >= 18 || !name) return false;
         if (*(volatile u32*)(u64)0x83B50F40u == 0) return false;
         if (!PlayerMenuIsHost()) return false;
@@ -214,28 +205,26 @@ namespace reconrender {
         volatile char* clientName = (volatile char*)(u64)(A_CLIENT_INFO + (u32)target * CLIENT_INFO_STRIDE + 0x40u);
 
         for (int i = 0; i < 0x20; ++i) {
-            serverName[i]            = name[i];
-            clientName[i]            = name[i];
+            serverName[i] = name[i];
+            clientName[i] = name[i];
             s_savedRename[target][i] = name[i];
         }
 
         s_savedRenameSet[target] = 1;
 
         return true;
-
     }
 
     static unsigned long __stdcall RenameKeyboardWorker(void*) {
-
-        typedef u32(__cdecl* ShowKeyboardFn)(u32, u32, const WCHAR*, const WCHAR*, const WCHAR*,
-            WCHAR*, u32, volatile u32*);
-        typedef void(__cdecl* CancelKeyboardFn)(u32);
+        typedef u32(__cdecl * ShowKeyboardFn)(u32, u32, const WCHAR*, const WCHAR*, const WCHAR*, WCHAR*, u32,
+                                              volatile u32*);
+        typedef void(__cdecl * CancelKeyboardFn)(u32);
 
         static const WCHAR kEmpty[] = L"";
         static const WCHAR kTitle[] = L"luda v1.0.0";
         static const WCHAR kDescription[] = L"Enter a custom Gamertag. (32 character Max)\nCredit: Gamer7112";
-        WCHAR result[0x20] = { 0 };
-        volatile u32 status[6] = { 0 };
+        WCHAR result[0x20] = {0};
+        volatile u32 status[6] = {0};
         u32 rc = ((ShowKeyboardFn)(u64)0x816C1F38u)(0, 0, kEmpty, kTitle, kDescription, result, 0x20, status);
 
         if (rc != 0x3E5u) {
@@ -256,20 +245,18 @@ namespace reconrender {
 
         if (status[4] != 0 || s_keyboardStop) return 0;
 
-        char narrow[0x20] = { 0 };
+        char narrow[0x20] = {0};
 
         for (int i = 0; i < 0x1F && result[i] != 0; ++i) narrow[i] = (char)(result[i] & 0xFF);
         __try {
             WriteRenamedPlayer((int)s_keyboardTarget, narrow);
-        } __except(EXCEPTION_EXECUTE_HANDLER) {
+        } __except (EXCEPTION_EXECUTE_HANDLER) {
         }
 
         return 0;
-
     }
 
     bool BeginRenamePlayer(int target) {
-
         if (s_keyboardThread) {
             if (WaitForSingleObject(s_keyboardThread, 0) != WAIT_OBJECT_0) return false;
 
@@ -278,7 +265,7 @@ namespace reconrender {
         }
 
         s_keyboardTarget = target;
-        s_keyboardStop   = false;
+        s_keyboardStop = false;
 
         unsigned long tid = 0;
         int rc = ExCreateThread(&s_keyboardThread, 0, &tid, 0, RenameKeyboardWorker, 0, 0x04000426u);
@@ -287,36 +274,24 @@ namespace reconrender {
         NotifyMsg("Keyboard UI failed to open, try again.", 3000);
 
         return false;
-
     }
 
-    static const u8 kCrashPayload0[] = {
-        0x3B, 0x20, 0x22, 0x5E, 0x48, 0xA4, 0xA8, 0x54, 0x17, 0xC6, 0x22, 0x00
-    };
-    static const u8 kCrashPayload1[] = {
-        0x37, 0x20, 0x33, 0x30, 0x20, 0x39, 0x30, 0x00
-    };
+    static const u8 kCrashPayload0[] = {0x3B, 0x20, 0x22, 0x5E, 0x48, 0xA4, 0xA8, 0x54, 0x17, 0xC6, 0x22, 0x00};
+    static const u8 kCrashPayload1[] = {0x37, 0x20, 0x33, 0x30, 0x20, 0x39, 0x30, 0x00};
     static const u8 kCrashPayload2[] = {
-        0x3B, 0x20, 0x22, 0x5E, 0x48, 0xFB, 0x43, 0xFB, 0x31, 0x65, 0xAC, 0x2B, 0x76, 0x2B, 0x44,
-        0x2B, 0x43, 0x65, 0xAC, 0x54, 0x67, 0x64, 0x77, 0x64, 0xE5, 0x2B, 0xA6, 0x38, 0xD6, 0x65,
-        0x2D, 0x65, 0x2D, 0xA6, 0x65, 0x2B, 0x66, 0x2B, 0x54, 0x2B, 0x43, 0x65, 0x2D, 0x4F, 0xEA,
-        0x2B, 0x54, 0x2B, 0x53, 0x65, 0x2B, 0x4F, 0x78, 0x4F, 0x76, 0x64, 0xE5, 0xA6, 0x66, 0x66,
-        0xD6, 0x65, 0x2D, 0x65, 0xA6, 0xA6, 0x65, 0xA6, 0x65, 0x64, 0xE7, 0x5F, 0xE0, 0x65, 0x65,
-        0x65, 0x2B, 0x64, 0xE7, 0x38, 0xE5, 0x65, 0x65, 0x65, 0xA6, 0x65, 0xBF, 0x65, 0xBF, 0x65,
-        0x65, 0x65, 0xA6, 0x65, 0x66, 0x65, 0x66, 0x65, 0xA6, 0x65, 0x65, 0x65, 0x2D, 0x65, 0x2B,
-        0x65, 0x65, 0x65, 0x65, 0x65, 0xA6, 0x65, 0xA6, 0x65, 0x65, 0x65, 0x65, 0x65, 0x65, 0x65,
-        0x66, 0x65, 0xA6, 0x65, 0x65, 0x65, 0x65, 0x65, 0x65, 0x65, 0xA6, 0x65, 0xA6, 0x22, 0x00
-    };
-    static const u8 kCrashPayload3[] = {
-        0x5C, 0x20, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x00
-    };
-    static const u8 kCrashPayload4[] = {
-        0x68, 0x20, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x00
-    };
+        0x3B, 0x20, 0x22, 0x5E, 0x48, 0xFB, 0x43, 0xFB, 0x31, 0x65, 0xAC, 0x2B, 0x76, 0x2B, 0x44, 0x2B, 0x43,
+        0x65, 0xAC, 0x54, 0x67, 0x64, 0x77, 0x64, 0xE5, 0x2B, 0xA6, 0x38, 0xD6, 0x65, 0x2D, 0x65, 0x2D, 0xA6,
+        0x65, 0x2B, 0x66, 0x2B, 0x54, 0x2B, 0x43, 0x65, 0x2D, 0x4F, 0xEA, 0x2B, 0x54, 0x2B, 0x53, 0x65, 0x2B,
+        0x4F, 0x78, 0x4F, 0x76, 0x64, 0xE5, 0xA6, 0x66, 0x66, 0xD6, 0x65, 0x2D, 0x65, 0xA6, 0xA6, 0x65, 0xA6,
+        0x65, 0x64, 0xE7, 0x5F, 0xE0, 0x65, 0x65, 0x65, 0x2B, 0x64, 0xE7, 0x38, 0xE5, 0x65, 0x65, 0x65, 0xA6,
+        0x65, 0xBF, 0x65, 0xBF, 0x65, 0x65, 0x65, 0xA6, 0x65, 0x66, 0x65, 0x66, 0x65, 0xA6, 0x65, 0x65, 0x65,
+        0x2D, 0x65, 0x2B, 0x65, 0x65, 0x65, 0x65, 0x65, 0xA6, 0x65, 0xA6, 0x65, 0x65, 0x65, 0x65, 0x65, 0x65,
+        0x65, 0x66, 0x65, 0xA6, 0x65, 0x65, 0x65, 0x65, 0x65, 0x65, 0x65, 0xA6, 0x65, 0xA6, 0x22, 0x00};
+    static const u8 kCrashPayload3[] = {0x5C, 0x20, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x00};
+    static const u8 kCrashPayload4[] = {0x68, 0x20, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x00};
 
     void SendCrashPlayerExact(int target) {
-
-        typedef void(__cdecl* ServerCommandFn)(u32, u32, const char*);
+        typedef void(__cdecl * ServerCommandFn)(u32, u32, const char*);
 
         ServerCommandFn send = (ServerCommandFn)(u64)0x8242FB70u;
 
@@ -324,7 +299,7 @@ namespace reconrender {
         send((u32)target, 0, (const char*)kCrashPayload1);
         send((u32)target, 0, (const char*)kCrashPayload2);
 
-        u32 cg      = *(volatile u32*)(u64)A_CG_POINTER;
+        u32 cg = *(volatile u32*)(u64)A_CG_POINTER;
         u32 encoded = ((0u - cg - 0x7D66CF38u) >> 2) - 0x1A223u;
         char dynamicPayload[64];
         char number[16];
@@ -343,11 +318,9 @@ namespace reconrender {
         send((u32)target, 0, (const char*)kCrashPayload3);
         send((u32)target, 0, (const char*)kCrashPayload4);
         NotifyMsg("Crashed Player.", 3000);
-
     }
 
     const char* DetectMenuName(const char* name) {
-
         if (StrHas(name, "XBOX360LSBEST")) return "Detected Jiggy Menu V4.2 (Infection)";
 
         if (StrHas(name, "^6J^5i^6g^5g^6y")) {
@@ -406,6 +379,5 @@ namespace reconrender {
         if (StrHas(name, "RM|T Zombies Menu V2.6")) return "Detected RM|T Zombies Menu V2.6";
 
         return 0;
-
     }
 }
