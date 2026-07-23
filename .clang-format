@@ -10,27 +10,23 @@ FixNamespaceComments: false
 
 SortIncludes: CaseInsensitive
 IncludeBlocks: Regroup
-IncludeIsMainRegex: '(|\\.h|\\.hh|\\.hpp|\\.hxx)$' # treat these as "main header" candidates
+IncludeIsMainRegex: '(|\\.h|\\.hh|\\.hpp|\\.hxx)$'
 
 IncludeCategories: # MSVC Precompiled header - MUST be first!
     - Regex: '^"pch\.h"$'
       Priority: -1
-    # C system headers (often end with .h)
+
     - Regex: '^<([a-z_]+\\.h)>$'
       Priority: 1
 
-    # C++ standard library headers (<vector>, <string>, etc.)
     - Regex: "^<[^./]+>$"
       Priority: 2
 
-    # Third-party (add/remove prefixes you use)
     - Regex: "^<(gtest|gmock|fmt|spdlog|boost)/"
       Priority: 3
 
-    # Your project headers (prefer this pattern if you use it)
     - Regex: '^"Mercex/'
       Priority: 4
 
-    # Any other quoted include (relative paths, etc.)
     - Regex: '^".*"'
       Priority: 5
